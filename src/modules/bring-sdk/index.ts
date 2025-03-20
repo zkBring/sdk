@@ -29,7 +29,7 @@ class BringSDK implements IBringSDK {
   createDrop: TCreateDrop = async ({
     token,
     amount,
-    claims,
+    maxClaims,
     title,
     description,
     zkPassSchemaId,
@@ -47,7 +47,7 @@ class BringSDK implements IBringSDK {
             new Drop({
               token,
               amount,
-              claims,
+              maxClaims,
               title,
               description,
               zkPassSchemaId,
@@ -69,9 +69,9 @@ class BringSDK implements IBringSDK {
 
   calculateFee: TCalculateFee = async ({
     amount, // atomic value
-    claims
+    maxClaims
   }) => {
-    const totalClaimsAmount = amount * claims
+    const totalClaimsAmount = amount * maxClaims
     const feeAmount = totalClaimsAmount / BigInt(100) * BigInt(configs.FEE * 100)
     const totalAmount =  feeAmount + totalClaimsAmount
     return {
@@ -85,19 +85,15 @@ class BringSDK implements IBringSDK {
   getDrop: TGetDrop = async (
     dropAddress
   ) => {
-    return {
-      drop
-    }
+    return drop
   }
 
   getDrops: TGetDrops = async ({
     creator
   }) => {
-    return {
-      drops: [
-        drop
-      ]
-    }
+    return  [
+      drop
+    ]
   }
 
   isTransgateAvailable: TIsTransgateAvailable = async () => {

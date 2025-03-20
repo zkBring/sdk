@@ -1,6 +1,6 @@
 type TCalculateFeeArgs = {
   amount: bigint
-  claims: bigint
+  maxClaims: bigint
 }
 
 type TCalculateFeeResponse = {
@@ -12,7 +12,7 @@ type TCalculateFeeResponse = {
 
 type TCalculateFee = ({
   amount,
-  claims
+  maxClaims
 }: TCalculateFeeArgs) => Promise<TCalculateFeeResponse>
 
 export default TCalculateFee

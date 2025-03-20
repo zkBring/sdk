@@ -14,7 +14,7 @@ import { ethers } from 'ethers'
 class Drop implements IDropSDK {
   token: string
   amount: bigint
-  claims: bigint
+  maxClaims: bigint
   title: string
   description: string
   zkPassSchemaId: string
@@ -24,7 +24,7 @@ class Drop implements IDropSDK {
   constructor({
     token,
     amount,
-    claims,
+    maxClaims,
     title,
     description,
     zkPassSchemaId,
@@ -33,7 +33,7 @@ class Drop implements IDropSDK {
   }: TConstructorArgs) {
     this.token = token
     this.amount = amount
-    this.claims = claims
+    this.maxClaims = maxClaims
     this.title = title
     this.description = description
     this.zkPassSchemaId = zkPassSchemaId
@@ -51,7 +51,14 @@ class Drop implements IDropSDK {
     }
   }
 
-  updateMetadata: TUpdateMetadata = async () => {
+  updateMetadata: TUpdateMetadata = async ({
+    title,
+    description
+  }) => {
+    if (!title && !description) throw new ValidationError('title or description needed')
+    if (title) this.title = title
+    if (description) this.description = description
+    
     return {
       txHash: '0x8b237c858edfc6c5a05969e17bdcfe060922373c8160011a16a7d8140483a021'
     }

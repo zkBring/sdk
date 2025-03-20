@@ -1,9 +1,7 @@
 import { TDrop } from "../../../../types"
 
 
-type TGetDropResponse = {
-  drop: TDrop
-}
+type TGetDropResponse = TDrop
 
 type TGetDrop = (
   dropAddress: string

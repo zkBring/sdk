@@ -1,6 +1,6 @@
 export type TUpdateMetadataArgs = {
-  title: string
-  description: string
+  title?: string
+  description?: string
 }
 
 export type TUpdateMetadataResponse = {

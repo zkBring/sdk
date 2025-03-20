@@ -3,7 +3,7 @@ import Drop from "../../../drop"
 type TCreateDropArgs = {
   token: string
   amount: bigint
-  claims: bigint
+  maxClaims: bigint
   title: string
   description: string
   zkPassSchemaId: string
@@ -19,7 +19,7 @@ type TCreateDropResponse = {
 type TCreateDrop = ({
   token,
   amount,
-  claims,
+  maxClaims,
   title,
   description,
   zkPassSchemaId,

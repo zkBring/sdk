@@ -4,9 +4,7 @@ export type TGetDropsArgs = {
   creator: string
 }
 
-type TGetDropsResponse = {
-  drops: TDrop[]
-}
+type TGetDropsResponse = TDrop[]
 
 type TGetDrops = (args: TGetDropsArgs) => Promise<TGetDropsResponse>
 
