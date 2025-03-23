@@ -1,4 +1,5 @@
 type TConstructorArgs = {
+  address: string
   token: string
   amount: bigint
   maxClaims: bigint

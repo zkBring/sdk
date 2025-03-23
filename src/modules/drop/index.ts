@@ -12,6 +12,7 @@ import * as configs from '../../configs'
 import { ethers } from 'ethers'
 
 class Drop implements IDropSDK {
+  address: string
   token: string
   amount: bigint
   maxClaims: bigint
@@ -22,6 +23,7 @@ class Drop implements IDropSDK {
   expiration: number
 
   constructor({
+    address,
     token,
     amount,
     maxClaims,
@@ -31,6 +33,7 @@ class Drop implements IDropSDK {
     zkPassAppId,
     expiration
   }: TConstructorArgs) {
+    this.address = address
     this.token = token
     this.amount = amount
     this.maxClaims = maxClaims
@@ -58,7 +61,7 @@ class Drop implements IDropSDK {
     if (!title && !description) throw new ValidationError('title or description needed')
     if (title) this.title = title
     if (description) this.description = description
-    
+
     return {
       txHash: '0x8b237c858edfc6c5a05969e17bdcfe060922373c8160011a16a7d8140483a021'
     }
@@ -69,6 +72,6 @@ class Drop implements IDropSDK {
       webProof: 'xxx'
     }
   }
-  
+
 }
 export default Drop
