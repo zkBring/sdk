@@ -4,7 +4,6 @@ import TGetFee from './get-fee'
 import TCalculateFee from './calculate-fee'
 import TGetDrop from './get-drop'
 import TGetDrops from './get-drops'
-import TIsTransgateAvailable from './is-transgate-available'
 
 interface IBringSDK {
   createDrop: TCreateDrop
@@ -12,7 +11,6 @@ interface IBringSDK {
   calculateFee: TCalculateFee
   getDrop: TGetDrop
   getDrops: TGetDrops
-  isTransgateAvailable: TIsTransgateAvailable
 }
 
 export {
@@ -21,8 +19,7 @@ export {
   TCalculateFee,
   TGetFee,
   TGetDrop,
-  TGetDrops,
-  TIsTransgateAvailable
+  TGetDrops
 }
 
 export default IBringSDK
