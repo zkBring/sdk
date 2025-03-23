@@ -12,18 +12,19 @@ import {
 } from '../../mocks'
 
 import Drop from '../drop'
-import ethers from 'ethers'
+import { ethers } from 'ethers'
+
 import * as configs from '../../configs'
+import { DropFactory } from '../../abi'
 
 class BringSDK implements IBringSDK {
-  
-  wallet: ethers.Wallet
+
+  connection: ethers.ContractRunner
 
   constructor({
-    wallet
+    walletOrProvider
   }: TConstructorArgs) {
-
-    this.wallet = wallet
+    this.connection = walletOrProvider
   }
 
   createDrop: TCreateDrop = async ({
@@ -61,6 +62,7 @@ class BringSDK implements IBringSDK {
   }
 
   getFee: TGetFee = async () => {
+    const factory = new ethers.Contract(configs.BASE_SEPOLIA_DROP_FACTORY, DropFactory.abi, this.connection)
     return {
       fee: configs.FEE
     }
@@ -73,7 +75,7 @@ class BringSDK implements IBringSDK {
   }) => {
     const totalClaimsAmount = amount * maxClaims
     const feeAmount = totalClaimsAmount / BigInt(100) * BigInt(configs.FEE * 100)
-    const totalAmount =  feeAmount + totalClaimsAmount
+    const totalAmount = feeAmount + totalClaimsAmount
     return {
       amount,
       totalAmount: totalAmount,
@@ -91,7 +93,7 @@ class BringSDK implements IBringSDK {
   getDrops: TGetDrops = async ({
     creator
   }) => {
-    return  [
+    return [
       drop
     ]
   }

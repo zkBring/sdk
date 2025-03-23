@@ -1,7 +1,7 @@
 import { ethers } from 'ethers'
 
 type TConstructorArgs = {
-  wallet: ethers.Wallet
+  walletOrProvider: ethers.ContractRunner
 }
 
 export default TConstructorArgs
