@@ -13,7 +13,7 @@ type TCreateDropArgs = {
 
 type TCreateDropResponse = {
   txHash: string
-  waitForDrop: Promise<Drop>
+  waitForDrop: () => Promise<Drop>
 }
 
 type TCreateDrop = ({
