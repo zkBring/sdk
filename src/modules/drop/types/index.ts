@@ -1,7 +1,7 @@
 import TClaim from './claim'
 import TConstructorArgs from './constructor-args'
 import TUpdateMetadata from './update-metadata'
-import TVerify from './verify'
+import TVerify, { TVerifyResult } from './verify'
 import TIsTransgateAvailable from './is-transgate-available'
 
 interface IDrop {
@@ -16,6 +16,7 @@ export {
   TConstructorArgs,
   TUpdateMetadata,
   TVerify,
+  TVerifyResult,
   TIsTransgateAvailable
 }
 

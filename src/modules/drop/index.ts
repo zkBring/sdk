@@ -4,6 +4,7 @@ import IDropSDK, {
   TConstructorArgs,
   TUpdateMetadata,
   TVerify,
+  TVerifyResult,
   TIsTransgateAvailable
 } from './types'
 import { ValidationError } from '../../errors'
@@ -70,9 +71,9 @@ class Drop implements IDropSDK {
   }
 
   verify: TVerify = async () => {
-    return {
-      webProof: 'xxx'
-    }
+    const connector = new TransgateConnect(this.zkPassAppId)
+    const res = await connector.launch(this.zkPassSchemaId) as TVerifyResult
+    return res
   }
 
   isTransgateAvailable: TIsTransgateAvailable = async () => {
