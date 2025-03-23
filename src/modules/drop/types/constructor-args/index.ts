@@ -1,3 +1,5 @@
+import TransgateConnect from "@zkpass/transgate-js-sdk";
+
 type TConstructorArgs = {
   address: string
   token: string
@@ -8,6 +10,7 @@ type TConstructorArgs = {
   zkPassSchemaId: string
   zkPassAppId: string
   expiration: number
+  transgateModule?: typeof TransgateConnect
 }
 
 

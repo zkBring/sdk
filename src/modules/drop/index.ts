@@ -1,12 +1,12 @@
+import TransgateConnect from "@zkpass/transgate-js-sdk"
 import IDropSDK, {
   TClaim,
   TConstructorArgs,
   TUpdateMetadata,
-  TVerify
+  TVerify,
+  TIsTransgateAvailable
 } from './types'
-
 import { ValidationError } from '../../errors'
-
 import { errors } from '../../texts'
 import * as configs from '../../configs'
 import { ethers } from 'ethers'
@@ -21,6 +21,7 @@ class Drop implements IDropSDK {
   zkPassSchemaId: string
   zkPassAppId: string
   expiration: number
+  transgateModule?: typeof TransgateConnect
 
   constructor({
     address,
@@ -31,7 +32,8 @@ class Drop implements IDropSDK {
     description,
     zkPassSchemaId,
     zkPassAppId,
-    expiration
+    expiration,
+    transgateModule
   }: TConstructorArgs) {
     this.address = address
     this.token = token
@@ -42,8 +44,8 @@ class Drop implements IDropSDK {
     this.zkPassSchemaId = zkPassSchemaId
     this.zkPassAppId = zkPassAppId
     this.expiration = expiration
+    this.transgateModule = transgateModule
   }
-
 
   claim: TClaim = async ({
     webProof,
@@ -73,5 +75,9 @@ class Drop implements IDropSDK {
     }
   }
 
+  isTransgateAvailable: TIsTransgateAvailable = async () => {
+    const connector = new TransgateConnect(this.zkPassAppId)
+    return connector.isTransgateAvailable()
+  }
 }
 export default Drop

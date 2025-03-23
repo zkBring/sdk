@@ -1,19 +1,17 @@
+import { ethers, hexlify, toUtf8Bytes } from 'ethers'
+import TransgateConnect from "@zkpass/transgate-js-sdk";
 import IBringSDK, {
   TConstructorArgs,
   TCreateDrop,
   TCalculateFee,
   TGetFee,
   TGetDrop,
-  TGetDrops,
-  TIsTransgateAvailable
+  TGetDrops
 } from './types'
 import {
   drop
 } from '../../mocks'
-
 import Drop from '../drop'
-import { ethers, hexlify, toUtf8Bytes } from 'ethers'
-
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
 
@@ -23,11 +21,15 @@ class BringSDK implements IBringSDK {
   dropFactory: ethers.Contract
   provider: ethers.Provider
   connectedAddress: string | null
+  transgateModule?: typeof TransgateConnect
 
   constructor({
-    walletOrProvider
+    walletOrProvider,
+    transgateModule
   }: TConstructorArgs) {
     this.connection = walletOrProvider
+    this.transgateModule = transgateModule
+
     if (this.canSign()) {
       const signerProvider = (this.connection as ethers.Signer).provider;
       if (!signerProvider) {
@@ -123,7 +125,8 @@ class BringSDK implements IBringSDK {
                 zkPassSchemaId,
                 zkPassAppId,
                 expiration,
-                address: _dropAddress
+                address: _dropAddress,
+                transgateModule: this.transgateModule
               })
             );
           };
@@ -142,7 +145,6 @@ class BringSDK implements IBringSDK {
     }
   }
 
-
   getFee: TGetFee = async () => {
     if (!this.fee) {
       this.fee = Number(await this.dropFactory.fee()) / 10000
@@ -151,7 +153,6 @@ class BringSDK implements IBringSDK {
       fee: this.fee
     }
   }
-
 
   calculateFee: TCalculateFee = async ({
     amount, // atomic value
@@ -173,6 +174,20 @@ class BringSDK implements IBringSDK {
   getDrop: TGetDrop = async (
     dropAddress
   ) => {
+    const dropData = {
+      address: dropAddress,
+      token: '0xaebd651c93cd4eae21dd2049204380075548add5',
+      expiration: 1742477528995,
+      zkPassSchemaId: 'c38b96722bd24b64b8d349ffd6391a8c',
+      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23',
+      maxClaims: BigInt('10'),
+      amount: BigInt('100000'),
+      title: 'Hello',
+      description: ' world!',
+      transgateMoldule: this.transgateModule
+    }
+
+    const drop = new Drop(dropData)
     return drop
   }
 
@@ -184,9 +199,6 @@ class BringSDK implements IBringSDK {
     ]
   }
 
-  isTransgateAvailable: TIsTransgateAvailable = async () => {
-    return true
-  }
 }
 
 export default BringSDK
