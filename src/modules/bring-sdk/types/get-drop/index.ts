@@ -1,10 +1,7 @@
-import { TDrop } from "../../../../types"
-
-
-type TGetDropResponse = TDrop
+import Drop from "../../../drop"
 
 type TGetDrop = (
   dropAddress: string
-) => Promise<TGetDropResponse>
+) => Promise<Drop>
 
 export default TGetDrop

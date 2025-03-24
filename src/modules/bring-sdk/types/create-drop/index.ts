@@ -11,9 +11,14 @@ type TCreateDropArgs = {
   expiration: number
 }
 
+type TWaitForDropResponse = {
+  drop: Drop,
+  event: any
+}
+
 type TCreateDropResponse = {
   txHash: string
-  waitForDrop: Promise<Drop>
+  waitForDrop: () => Promise<TWaitForDropResponse>
 }
 
 type TCreateDrop = ({
