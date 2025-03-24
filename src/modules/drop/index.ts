@@ -69,8 +69,6 @@ class Drop implements IDropSDK {
     if (!this.canSign()) throw new Error("Cannot send transaction: connection is read-only.")
 
     const ephemeralKeySig = await generateEphemeralKeySig({ ephemeralKey, recipient })
-    console.log({ ephemeralKeySig })
-
     const tx = await this.dropContract.claimWithEphemeralKey(
       hexlify(toUtf8Bytes(webproof.taskId)),
       webproof.validatorAddress,
@@ -82,9 +80,6 @@ class Drop implements IDropSDK {
       webproof.allocatorSignature,
       webproof.validatorSignature
     );
-
-    console.log({ tx })
-
     return {
       txHash: tx.hash
     }
