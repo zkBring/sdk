@@ -1,4 +1,4 @@
-export type TVerifyResult = {
+export type TWebproof = {
   allocatorAddress: string;
   allocatorSignature: string;
   publicFields: any[];
@@ -10,6 +10,12 @@ export type TVerifyResult = {
   recipient?: string;
 }
 
-type TVerify = () => Promise<TVerifyResult>
+export type TGenerateWebproofResponse = {
+  webproof: TWebproof;
+  ephemeralKey: string;
+};
 
-export default TVerify
+type TGenerateWebproof = () => Promise<TGenerateWebproofResponse>
+
+export default TGenerateWebproof
+

@@ -19,7 +19,6 @@ class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
   fee: number
   dropFactory: ethers.Contract
-  provider: ethers.Provider
   connectedAddress: string | null
   transgateModule?: typeof TransgateConnect
 
@@ -31,15 +30,9 @@ class BringSDK implements IBringSDK {
     this.transgateModule = transgateModule
 
     if (this.canSign()) {
-      const signerProvider = (this.connection as ethers.Signer).provider;
-      if (!signerProvider) {
-        throw new Error("Signer does not have an associated provider")
-      }
-      this.provider = signerProvider
       this.getConnectedAddress()
-    } else {
-      this.provider = this.connection as ethers.Provider
     }
+
     this.dropFactory = new ethers.Contract(
       configs.BASE_SEPOLIA_DROP_FACTORY,
       DropFactory.abi,
@@ -114,21 +107,23 @@ class BringSDK implements IBringSDK {
 
             // Remove the listener once the event is correctly captured.
             this.dropFactory.off(filter, listener);
-
-            resolve(
-              new Drop({
-                token,
-                amount,
-                maxClaims,
-                title,
-                description,
-                zkPassSchemaId,
-                zkPassAppId,
-                expiration,
-                address: _dropAddress,
-                transgateModule: this.transgateModule
-              })
-            );
+            const drop = new Drop({
+              token,
+              amount,
+              maxClaims,
+              title,
+              description,
+              zkPassSchemaId,
+              zkPassAppId,
+              expiration,
+              address: _dropAddress,
+              transgateModule: this.transgateModule,
+              connection: this.connection
+            })
+            resolve({
+              drop,
+              event
+            });
           };
 
           // Start listening for the DropCreated event with the filter.
@@ -141,7 +136,6 @@ class BringSDK implements IBringSDK {
           }, 600000); // Timeout after 10 minutes.
         });
       }
-
     }
   }
 
@@ -184,9 +178,9 @@ class BringSDK implements IBringSDK {
       amount: BigInt('100000'),
       title: 'Hello',
       description: ' world!',
-      transgateMoldule: this.transgateModule
+      connection: this.connection,
+      transgateModule: this.transgateModule
     }
-
     const drop = new Drop(dropData)
     return drop
   }
@@ -198,7 +192,6 @@ class BringSDK implements IBringSDK {
       drop
     ]
   }
-
 }
 
 export default BringSDK
