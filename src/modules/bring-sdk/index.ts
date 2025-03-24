@@ -119,7 +119,8 @@ class BringSDK implements IBringSDK {
                 zkPassAppId,
                 expiration,
                 address: _dropAddress,
-                transgateModule: this.transgateModule
+                transgateModule: this.transgateModule,
+                connection: this.connection
               })
             );
           };
@@ -134,7 +135,6 @@ class BringSDK implements IBringSDK {
           }, 600000); // Timeout after 10 minutes.
         });
       }
-
     }
   }
 
@@ -177,9 +177,9 @@ class BringSDK implements IBringSDK {
       amount: BigInt('100000'),
       title: 'Hello',
       description: ' world!',
-      transgateMoldule: this.transgateModule
+      connection: this.connection,
+      transgateModule: this.transgateModule
     }
-
     const drop = new Drop(dropData)
     return drop
   }
@@ -191,7 +191,6 @@ class BringSDK implements IBringSDK {
       drop
     ]
   }
-
 }
 
 export default BringSDK

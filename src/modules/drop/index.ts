@@ -3,8 +3,8 @@ import IDropSDK, {
   TClaim,
   TConstructorArgs,
   TUpdateMetadata,
-  TVerify,
-  TVerifyResult,
+  TGenerateWebproof,
+  TWebproof,
   TIsTransgateAvailable
 } from './types'
 import { ValidationError } from '../../errors'
@@ -22,11 +22,9 @@ class Drop implements IDropSDK {
   zkPassSchemaId: string
   zkPassAppId: string
   expiration: number
-  transgateModule?: typeof TransgateConnect
 
-  // Private property to store the randomly ethemereal key
-  private _ephemeralKeySigner?: ethers.Signer
-  private _webproof?: TVerifyResult
+  private _connection: ethers.ContractRunner
+  private _transgateModule?: typeof TransgateConnect
 
   constructor({
     address,
@@ -38,6 +36,7 @@ class Drop implements IDropSDK {
     zkPassSchemaId,
     zkPassAppId,
     expiration,
+    connection,
     transgateModule
   }: TConstructorArgs) {
     this.address = address
@@ -49,10 +48,18 @@ class Drop implements IDropSDK {
     this.zkPassSchemaId = zkPassSchemaId
     this.zkPassAppId = zkPassAppId
     this.expiration = expiration
-    this.transgateModule = transgateModule
+    this._transgateModule = transgateModule
+    this._connection = connection
+  }
+
+  private canSign(): boolean {
+    return typeof (this._connection as ethers.Signer).getAddress === 'function'
   }
 
   claim: TClaim = async () => {
+    if (!this.canSign()) throw new Error("Cannot send transaction: connection is read-only.")
+    const connectedAddress = await (this._connection as ethers.Signer).getAddress()
+
     return {
       txHash: '0x8b237c858edfc6c5a05969e17bdcfe060922373c8160011a16a7d8140483a021'
     }
@@ -71,19 +78,21 @@ class Drop implements IDropSDK {
     }
   }
 
-  verify: TVerify = async () => {
-    // store the ephemeral key to use at claim to prevent frontrunning 
-    this._ephemeralKeySigner = ethers.Wallet.createRandom() as ethers.Signer
-    const ephemeralKeyAddress = await this._ephemeralKeySigner.getAddress();
-    const connector = new TransgateConnect(this.zkPassAppId)
-    this._webproof = await connector.launch(
+  generateWebproof: TGenerateWebproof = async () => {
+    if (!this._transgateModule) throw new Error("Transgate module not provided. Please pass it in the SDK constructor.")
+    // store the ephemeral key to use at claim to prevent frontrunning    
+    const ephemeralKey = ethers.Wallet.createRandom() as ethers.Signer
+    const ephemeralKeyAddress = await ephemeralKey.getAddress();
+    const connector = new this._transgateModule(this.zkPassAppId)
+    const webproof = await connector.launch(
       this.zkPassSchemaId,
-      ephemeralKeyAddress) as TVerifyResult
-    return this._webproof
+      ephemeralKeyAddress) as TWebproof
+    return { webproof, ephemeralKey }
   }
 
   isTransgateAvailable: TIsTransgateAvailable = async () => {
-    const connector = new TransgateConnect(this.zkPassAppId)
+    if (!this._transgateModule) throw new Error("Transgate module not provided. Please pass it in the SDK constructor.")
+    const connector = new this._transgateModule(this.zkPassAppId)
     return connector.isTransgateAvailable()
   }
 }
