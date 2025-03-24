@@ -81,7 +81,41 @@ class Drop implements IDropSDK {
       webproof.validatorSignature
     );
     return {
-      txHash: tx.hash
+      txHash: tx.hash,
+      waitForClaim: async () => {
+        return new Promise(async (resolve, reject) => {
+          // Create a filter for the Claimed event.
+          // Claimed event signature: event Claimed(address indexed recipient, bytes32 uHash);
+          const filter = this.dropContract.filters.Claimed(recipient, null);
+
+          // Define the listener that will handle the event.
+          const listener = (event: any) => {
+            if (!event.args) {
+              return;
+            }
+            const [_recipient, _uHash] = event.args
+
+            // Verify that the event's uHash matches the expected webproof.uHash.
+            if (_uHash !== webproof.uHash) {
+              return;
+            }
+            // Remove the listener when a matching event is captured.
+            this.dropContract.off(filter, listener);
+
+            // Resolve with the event data.                        
+            resolve(event);
+          };
+
+          // Start listening for the Claimed event.
+          this.dropContract.on(filter, listener);
+
+          // Add a timeout to reject the promise if no event fires within 10 minutes.
+          setTimeout(() => {
+            this.dropContract.off(filter, listener);
+            reject(new Error("Timeout waiting for Claimed event"));
+          }, 600000); // 600,000 ms = 10 minutes
+        })
+      }
     }
   }
 

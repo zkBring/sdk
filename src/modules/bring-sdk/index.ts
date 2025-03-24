@@ -107,22 +107,23 @@ class BringSDK implements IBringSDK {
 
             // Remove the listener once the event is correctly captured.
             this.dropFactory.off(filter, listener);
-
-            resolve(
-              new Drop({
-                token,
-                amount,
-                maxClaims,
-                title,
-                description,
-                zkPassSchemaId,
-                zkPassAppId,
-                expiration,
-                address: _dropAddress,
-                transgateModule: this.transgateModule,
-                connection: this.connection
-              })
-            );
+            const drop = new Drop({
+              token,
+              amount,
+              maxClaims,
+              title,
+              description,
+              zkPassSchemaId,
+              zkPassAppId,
+              expiration,
+              address: _dropAddress,
+              transgateModule: this.transgateModule,
+              connection: this.connection
+            })
+            resolve({
+              drop,
+              event
+            });
           };
 
           // Start listening for the DropCreated event with the filter.
