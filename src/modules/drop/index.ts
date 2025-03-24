@@ -6,7 +6,8 @@ import IDropSDK, {
   TUpdateMetadata,
   TGenerateWebproof,
   TWebproof,
-  TIsTransgateAvailable
+  TIsTransgateAvailable,
+  THasUserClaimed
 } from './types'
 import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
@@ -148,6 +149,10 @@ class Drop implements IDropSDK {
     if (!this._transgateModule) throw new Error("Transgate module not provided. Please pass it in the SDK constructor.")
     const connector = new this._transgateModule(this.zkPassAppId)
     return connector.isTransgateAvailable()
+  }
+
+  hasUserClaimed: THasUserClaimed = async ({ uHash }) => {
+    return this.dropContract.isClaimed(uHash)
   }
 }
 export default Drop
