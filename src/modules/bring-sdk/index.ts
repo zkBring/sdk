@@ -19,7 +19,6 @@ class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
   fee: number
   dropFactory: ethers.Contract
-  provider: ethers.Provider
   connectedAddress: string | null
   transgateModule?: typeof TransgateConnect
 
@@ -31,15 +30,9 @@ class BringSDK implements IBringSDK {
     this.transgateModule = transgateModule
 
     if (this.canSign()) {
-      const signerProvider = (this.connection as ethers.Signer).provider;
-      if (!signerProvider) {
-        throw new Error("Signer does not have an associated provider")
-      }
-      this.provider = signerProvider
       this.getConnectedAddress()
-    } else {
-      this.provider = this.connection as ethers.Provider
     }
+
     this.dropFactory = new ethers.Contract(
       configs.BASE_SEPOLIA_DROP_FACTORY,
       DropFactory.abi,
