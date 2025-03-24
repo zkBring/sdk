@@ -1,4 +1,3 @@
-import { ethers } from 'ethers'
 export type TWebproof = {
   allocatorAddress: string;
   allocatorSignature: string;
@@ -13,7 +12,7 @@ export type TWebproof = {
 
 export type TGenerateWebproofResponse = {
   webproof: TWebproof;
-  ephemeralKey: ethers.Signer;
+  ephemeralKey: string;
 };
 
 type TGenerateWebproof = () => Promise<TGenerateWebproofResponse>
