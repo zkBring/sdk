@@ -5,6 +5,7 @@ import IBringSDK, {
   TCreateDrop,
   TCalculateFee,
   TGetFee,
+  TUpdateWalletOrProvider,
   TGetDrop,
   TGetDrops
 } from './types'
@@ -26,19 +27,21 @@ class BringSDK implements IBringSDK {
     walletOrProvider,
     transgateModule
   }: TConstructorArgs) {
-    this.connection = walletOrProvider
     this.transgateModule = transgateModule
+    this._initializeConnection(walletOrProvider)
+    this.getFee()
+  }
 
-    if (this.canSign()) {
-      this.getConnectedAddress()
-    }
-
+  private _initializeConnection = async (walletOrProvider: ethers.ContractRunner) => {
+    this.connection = walletOrProvider
     this.dropFactory = new ethers.Contract(
       configs.BASE_SEPOLIA_DROP_FACTORY,
       DropFactory.abi,
       this.connection
     )
-    this.getFee()
+    if (this.canSign()) {
+      await this.getConnectedAddress()
+    }
   }
 
   private getConnectedAddress = async () => {
@@ -138,6 +141,13 @@ class BringSDK implements IBringSDK {
       }
     }
   }
+
+
+  updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
+    await this._initializeConnection(walletOrProvider)
+    return true
+  }
+
 
   getFee: TGetFee = async () => {
     if (!this.fee) {
