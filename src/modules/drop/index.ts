@@ -14,7 +14,7 @@ import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
 import * as configs from '../../configs'
 import { DropERC20 } from '../../abi'
-import { generateEphemeralKeySig } from '../../utils'
+import { generateEphemeralKeySig, xorAddresses } from '../../utils'
 
 class Drop implements IDropSDK {
   address: string
@@ -78,14 +78,15 @@ class Drop implements IDropSDK {
   claim: TClaim = async ({ webproof, ephemeralKey, recipient }) => {
     if (!this.canSign()) throw new Error("Cannot send transaction: connection is read-only.")
 
-    const ephemeralKeySig = await generateEphemeralKeySig({ ephemeralKey, recipient })
+    const { signature: ephemeralKeySig,
+      signer: ephemeralKeyAddress } = generateEphemeralKeySig({ ephemeralKey, recipient })
     const tx = await this.dropContract.claimWithEphemeralKey(
       hexlify(toUtf8Bytes(webproof.taskId)),
       webproof.validatorAddress,
       webproof.uHash,
       webproof.publicFieldsHash,
-      recipient, // recipient
-      webproof.recipient, // ephemeral key address
+      recipient, // claimer address
+      ephemeralKeyAddress, // ephemeral key address
       ephemeralKeySig,
       webproof.allocatorSignature,
       webproof.validatorSignature
@@ -147,9 +148,19 @@ class Drop implements IDropSDK {
     // store the ephemeral key to use at claim to prevent frontrunning    
     const ephemeralKey = ethers.Wallet.createRandom()
     const connector = new this._transgateModule(this.zkPassAppId)
+
+    const webproofRecipient = xorAddresses(this.address, ephemeralKey.address)
+
+    console.log({
+      dropAddress: this.address,
+      ekAddress: ephemeralKey.address,
+      webproofRecipient
+    })
+
+
     const webproof = await connector.launch(
       this.zkPassSchemaId,
-      ephemeralKey.address) as TWebproof
+      webproofRecipient) as TWebproof
 
     return { webproof, ephemeralKey: ephemeralKey.privateKey }
   }
