@@ -4,6 +4,7 @@ import TUpdateMetadata from './update-metadata'
 import TGenerateWebproof, { TWebproof } from './generate-webproof'
 import TIsTransgateAvailable from './is-transgate-available'
 import THasUserClaimed from './has-user-claimed'
+import TUpdateWalletOrProvider from "./update-wallet-or-provider"
 
 interface IDrop {
   claim: TClaim
@@ -11,6 +12,7 @@ interface IDrop {
   generateWebproof: TGenerateWebproof
   isTransgateAvailable: TIsTransgateAvailable
   hasUserClaimed: THasUserClaimed
+  updateWalletOrProvider: TUpdateWalletOrProvider
 }
 
 export {
@@ -20,7 +22,8 @@ export {
   TGenerateWebproof,
   TWebproof,
   TIsTransgateAvailable,
-  THasUserClaimed
+  THasUserClaimed,
+  TUpdateWalletOrProvider
 }
 
 export default IDrop
