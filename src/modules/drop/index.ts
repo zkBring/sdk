@@ -7,6 +7,7 @@ import IDropSDK, {
   TGenerateWebproof,
   TWebproof,
   TIsTransgateAvailable,
+  TUpdateWalletOrProvider,
   THasUserClaimed
 } from './types'
 import { ValidationError } from '../../errors'
@@ -53,13 +54,21 @@ class Drop implements IDropSDK {
     this.zkPassAppId = zkPassAppId
     this.expiration = expiration
     this._transgateModule = transgateModule
-    this._connection = connection
+    this._initializeConnection(connection)
+  }
 
+  private _initializeConnection = async (connection: ethers.ContractRunner) => {
+    this._connection = connection
     this.dropContract = new ethers.Contract(
       this.address,
       DropERC20.abi,
       this._connection
     )
+  }
+
+  updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
+    await this._initializeConnection(walletOrProvider)
+    return true
   }
 
   private canSign(): boolean {
