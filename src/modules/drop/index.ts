@@ -145,19 +145,18 @@ class Drop implements IDropSDK {
 
   generateWebproof: TGenerateWebproof = async () => {
     if (!this._transgateModule) throw new Error("Transgate module not provided. Please pass it in the SDK constructor.")
-    // store the ephemeral key to use at claim to prevent frontrunning    
+
+    // we use ephemeral key to be able to use generated webproof 
+    // to claim to an address signed by ephemeral key
+    // we use signature to prevent front-running of claimer
     const ephemeralKey = ethers.Wallet.createRandom()
     const connector = new this._transgateModule(this.zkPassAppId)
 
+    // we XOR drop contract address with ephemeral key address to
+    // prevent re-use of webproofs in other drop contracts 
     const webproofRecipient = xorAddresses(this.address, ephemeralKey.address)
 
-    console.log({
-      dropAddress: this.address,
-      ekAddress: ephemeralKey.address,
-      webproofRecipient
-    })
-
-
+    // generate webproof via zkPass extension
     const webproof = await connector.launch(
       this.zkPassSchemaId,
       webproofRecipient) as TWebproof
