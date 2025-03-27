@@ -273,7 +273,7 @@ class Drop implements IDropSDK {
   }
 
   hasUserClaimed: THasUserClaimed = async ({ uHash }) => {
-    return this.dropContract.isClaimed(uHash)
+    return this.dropContract.hasUserClaimed(uHash)
   }
 }
 export default Drop
