@@ -15,7 +15,11 @@ import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
 import * as configs from '../../configs'
 import { DropERC20 } from '../../abi'
-import { generateEphemeralKeySig, xorAddresses } from '../../utils'
+import {
+  generateEphemeralKeySig,
+  xorAddresses,
+  uploadMetadataToIpfs
+} from '../../utils'
 
 class Drop implements IDropSDK {
   address: string
@@ -135,12 +139,41 @@ class Drop implements IDropSDK {
     title,
     description
   }) => {
-    if (!title && !description) throw new ValidationError('title or description needed')
+    if (!this.canSign()) throw new Error("Cannot send transaction: connection is read-only.")
+    if (!title && !description) throw new ValidationError('Title or description needed')
     if (title) this.title = title
     if (description) this.description = description
 
+    const ipfsHash = await uploadMetadataToIpfs({
+      title: this.title,
+      description: this.description
+    })
+
+    const tx = await this.dropContract.updateMetadata(ipfsHash)
     return {
-      txHash: '0x8b237c858edfc6c5a05969e17bdcfe060922373c8160011a16a7d8140483a021'
+      txHash: tx.hash,
+      waitForUpdate: async () => {
+        return new Promise(async (resolve, reject) => {
+          // Create a filter for the MetadataUpdated event.
+          // MetadataUpdated event signature: event MetadataUpdated();
+          const filter = this.dropContract.filters.MetadataUpdated(null);
+
+          // Define the listener that will handle the event.
+          const listener = (event: any) => {
+            this.dropContract.off(filter, listener);
+            resolve(event);
+          };
+
+          // Start listening for the Stopped event.
+          this.dropContract.on(filter, listener);
+
+          // Add a timeout to reject the promise if no event fires within 10 minutes.
+          setTimeout(() => {
+            this.dropContract.off(filter, listener);
+            reject(new Error("Timeout waiting for MetadataUpdated event"));
+          }, 600000); // 600,000 ms = 10 minutes
+        })
+      }
     }
   }
 

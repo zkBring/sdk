@@ -15,6 +15,7 @@ import {
 import Drop from '../drop'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
+import { uploadMetadataToIpfs } from '../../utils'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
@@ -63,7 +64,7 @@ class BringSDK implements IBringSDK {
     expiration
   }) => {
     const schemaIdHex = hexlify(toUtf8Bytes(zkPassSchemaId))
-    const metadataIpfsHash = ethers.encodeBytes32String("metadata")
+    const metadataIpfsHash = await uploadMetadataToIpfs({ title, description })
 
     const { hash: txHash } = await this.dropFactory.createDrop(
       token,
