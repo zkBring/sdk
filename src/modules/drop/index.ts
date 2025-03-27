@@ -9,7 +9,9 @@ import IDropSDK, {
   TIsTransgateAvailable,
   TUpdateWalletOrProvider,
   THasUserClaimed,
-  TStop
+  TGetStakedAmount,
+  TStop,
+  TStake
 } from './types'
 import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
@@ -157,6 +159,42 @@ class Drop implements IDropSDK {
           // Create a filter for the MetadataUpdated event.
           // MetadataUpdated event signature: event MetadataUpdated();
           const filter = this.dropContract.filters.MetadataUpdated(null);
+
+          // Define the listener that will handle the event.
+          const listener = (event: any) => {
+            this.dropContract.off(filter, listener);
+            resolve(event);
+          };
+
+          // Start listening for the Stopped event.
+          this.dropContract.on(filter, listener);
+
+          // Add a timeout to reject the promise if no event fires within 10 minutes.
+          setTimeout(() => {
+            this.dropContract.off(filter, listener);
+            reject(new Error("Timeout waiting for MetadataUpdated event"));
+          }, 600000); // 600,000 ms = 10 minutes
+        })
+      }
+    }
+  }
+
+  getStakedAmount: TGetStakedAmount = async () => {
+    return this.dropContract.bringStaked()
+  }
+
+  stake: TStake = async (amount) => {
+    if (!this.canSign()) throw new Error("Cannot send transaction: connection is read-only.")
+    if (!amount) throw new ValidationError('Stake amount should be provided.')
+
+    const tx = await this.dropContract.stake(amount)
+    return {
+      txHash: tx.hash,
+      waitForStake: async () => {
+        return new Promise(async (resolve, reject) => {
+          // Create a filter for the BringStaked event.
+          // BringStaked event signature: event BringStaked();
+          const filter = this.dropContract.filters.BringStaked(null, null);
 
           // Define the listener that will handle the event.
           const listener = (event: any) => {
