@@ -8,7 +8,8 @@ import IDropSDK, {
   TWebproof,
   TIsTransgateAvailable,
   TUpdateWalletOrProvider,
-  THasUserClaimed
+  THasUserClaimed,
+  TStop
 } from './types'
 import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
@@ -140,6 +141,36 @@ class Drop implements IDropSDK {
 
     return {
       txHash: '0x8b237c858edfc6c5a05969e17bdcfe060922373c8160011a16a7d8140483a021'
+    }
+  }
+
+  stop: TStop = async () => {
+    if (!this.canSign()) throw new Error("Cannot send transaction: connection is read-only.")
+    const tx = await this.dropContract.stop()
+    return {
+      txHash: tx.hash,
+      waitForStop: async () => {
+        return new Promise(async (resolve, reject) => {
+          // Create a filter for the Stopped event.
+          // Stopped event signature: event Stopped();
+          const filter = this.dropContract.filters.Stopped();
+
+          // Define the listener that will handle the event.
+          const listener = (event: any) => {
+            this.dropContract.off(filter, listener);
+            resolve(event);
+          };
+
+          // Start listening for the Stopped event.
+          this.dropContract.on(filter, listener);
+
+          // Add a timeout to reject the promise if no event fires within 10 minutes.
+          setTimeout(() => {
+            this.dropContract.off(filter, listener);
+            reject(new Error("Timeout waiting for Stopped event"));
+          }, 600000); // 600,000 ms = 10 minutes
+        })
+      }
     }
   }
 
