@@ -17,10 +17,10 @@ import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
 import * as configs from '../../configs'
 import { DropERC20 } from '../../abi'
+import { indexerApi } from '../../api'
 import {
   generateEphemeralKeySig,
-  xorAddresses,
-  uploadMetadataToIpfs
+  xorAddresses
 } from '../../utils'
 
 class Drop implements IDropSDK {
@@ -38,6 +38,9 @@ class Drop implements IDropSDK {
   private _connection: ethers.ContractRunner
   private _transgateModule?: typeof TransgateConnect
 
+  private _indexerApiUrl: string
+  private _indexerApiKey: string | null
+
   constructor({
     address,
     token,
@@ -49,7 +52,9 @@ class Drop implements IDropSDK {
     zkPassAppId,
     expiration,
     connection,
-    transgateModule
+    transgateModule,
+    indexerApiUrl,
+    indexerApiKey
   }: TConstructorArgs) {
     this.address = address
     this.token = token
@@ -61,6 +66,8 @@ class Drop implements IDropSDK {
     this.zkPassAppId = zkPassAppId
     this.expiration = expiration
     this._transgateModule = transgateModule
+    this._indexerApiKey = indexerApiKey
+    this._indexerApiUrl = indexerApiUrl
     this._initializeConnection(connection)
   }
 
@@ -146,12 +153,13 @@ class Drop implements IDropSDK {
     if (title) this.title = title
     if (description) this.description = description
 
-    const ipfsHash = await uploadMetadataToIpfs({
-      title: this.title,
-      description: this.description
-    })
-
-    const tx = await this.dropContract.updateMetadata(ipfsHash)
+    const { metadataIpfsHash } = await indexerApi.uploadDropMetadata(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      this.title,
+      description
+    )
+    const tx = await this.dropContract.updateMetadata(metadataIpfsHash)
     return {
       txHash: tx.hash,
       waitForUpdate: async () => {

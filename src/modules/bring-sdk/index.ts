@@ -15,7 +15,7 @@ import {
 import Drop from '../drop'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
-import { uploadMetadataToIpfs } from '../../utils'
+import { indexerApi } from '../../api'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
@@ -24,6 +24,10 @@ class BringSDK implements IBringSDK {
   connectedAddress: string | null
   transgateModule?: typeof TransgateConnect
 
+  // #TODO: set API url and API key from constructor args 
+  private _indexerApiUrl: string
+  private _indexerApiKey: string | null
+
   constructor({
     walletOrProvider,
     transgateModule
@@ -31,6 +35,8 @@ class BringSDK implements IBringSDK {
     this.transgateModule = transgateModule
     this._initializeConnection(walletOrProvider)
     this.getFee()
+
+    this._indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
   }
 
   private _initializeConnection = async (walletOrProvider: ethers.ContractRunner) => {
@@ -64,7 +70,12 @@ class BringSDK implements IBringSDK {
     expiration
   }) => {
     const schemaIdHex = hexlify(toUtf8Bytes(zkPassSchemaId))
-    const metadataIpfsHash = await uploadMetadataToIpfs({ title, description })
+    const { metadataIpfsHash } = await indexerApi.uploadDropMetadata(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      title,
+      description
+    )
 
     const { hash: txHash } = await this.dropFactory.createDrop(
       token,
@@ -122,7 +133,9 @@ class BringSDK implements IBringSDK {
               expiration,
               address: _dropAddress,
               transgateModule: this.transgateModule,
-              connection: this.connection
+              connection: this.connection,
+              indexerApiUrl: this._indexerApiUrl,
+              indexerApiKey: this._indexerApiKey
             })
             resolve({
               drop,
@@ -190,7 +203,9 @@ class BringSDK implements IBringSDK {
       title: 'Hello',
       description: ' world!',
       connection: this.connection,
-      transgateModule: this.transgateModule
+      transgateModule: this.transgateModule,
+      indexerApiUrl: this._indexerApiUrl,
+      indexerApiKey: this._indexerApiKey
     }
     const drop = new Drop(dropData)
     return drop
