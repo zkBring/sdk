@@ -16,7 +16,6 @@ import Drop from '../drop'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
 import { indexerApi } from '../../api'
-import { uploadMetadataToIpfs } from '../../utils'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
@@ -26,8 +25,8 @@ class BringSDK implements IBringSDK {
   transgateModule?: typeof TransgateConnect
 
   // #TODO: set API url and API key from constructor args 
-  indexerApiUrl: string
-  #indexerApiKey: string | null
+  private _indexerApiUrl: string
+  private _indexerApiKey: string | null
 
   constructor({
     walletOrProvider,
@@ -37,7 +36,7 @@ class BringSDK implements IBringSDK {
     this._initializeConnection(walletOrProvider)
     this.getFee()
 
-    this.indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
+    this._indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
   }
 
   private _initializeConnection = async (walletOrProvider: ethers.ContractRunner) => {
@@ -72,8 +71,8 @@ class BringSDK implements IBringSDK {
   }) => {
     const schemaIdHex = hexlify(toUtf8Bytes(zkPassSchemaId))
     const { metadataIpfsHash } = await indexerApi.uploadDropMetadata(
-      this.indexerApiUrl,
-      this.#indexerApiKey,
+      this._indexerApiUrl,
+      this._indexerApiKey,
       title,
       description
     )
@@ -134,7 +133,9 @@ class BringSDK implements IBringSDK {
               expiration,
               address: _dropAddress,
               transgateModule: this.transgateModule,
-              connection: this.connection
+              connection: this.connection,
+              indexerApiUrl: this._indexerApiUrl,
+              indexerApiKey: this._indexerApiKey
             })
             resolve({
               drop,
@@ -202,7 +203,9 @@ class BringSDK implements IBringSDK {
       title: 'Hello',
       description: ' world!',
       connection: this.connection,
-      transgateModule: this.transgateModule
+      transgateModule: this.transgateModule,
+      indexerApiUrl: this._indexerApiUrl,
+      indexerApiKey: this._indexerApiKey
     }
     const drop = new Drop(dropData)
     return drop

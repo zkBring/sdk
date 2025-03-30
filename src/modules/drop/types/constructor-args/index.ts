@@ -1,3 +1,4 @@
+
 import { ethers } from 'ethers'
 import TransgateConnect from "@zkpass/transgate-js-sdk";
 
@@ -12,7 +13,9 @@ type TConstructorArgs = {
   zkPassAppId: string
   expiration: number
   connection: ethers.ContractRunner
-  transgateModule?: typeof TransgateConnect
+  transgateModule?: typeof TransgateConnect,
+  indexerApiUrl: string
+  indexerApiKey: string | null
 }
 
 
