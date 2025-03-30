@@ -15,6 +15,7 @@ import {
 import Drop from '../drop'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
+import { indexerApi } from '../../api'
 import { uploadMetadataToIpfs } from '../../utils'
 
 class BringSDK implements IBringSDK {
@@ -24,6 +25,10 @@ class BringSDK implements IBringSDK {
   connectedAddress: string | null
   transgateModule?: typeof TransgateConnect
 
+  // #TODO: set API url and API key from constructor args 
+  indexerApiUrl: string
+  #indexerApiKey: string | null
+
   constructor({
     walletOrProvider,
     transgateModule
@@ -31,6 +36,8 @@ class BringSDK implements IBringSDK {
     this.transgateModule = transgateModule
     this._initializeConnection(walletOrProvider)
     this.getFee()
+
+    this.indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
   }
 
   private _initializeConnection = async (walletOrProvider: ethers.ContractRunner) => {
@@ -64,7 +71,12 @@ class BringSDK implements IBringSDK {
     expiration
   }) => {
     const schemaIdHex = hexlify(toUtf8Bytes(zkPassSchemaId))
-    const metadataIpfsHash = await uploadMetadataToIpfs({ title, description })
+    const { metadataIpfsHash } = await indexerApi.uploadDropMetadata(
+      this.indexerApiUrl,
+      this.#indexerApiKey,
+      title,
+      description
+    )
 
     const { hash: txHash } = await this.dropFactory.createDrop(
       token,
