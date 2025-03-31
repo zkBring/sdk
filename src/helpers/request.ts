@@ -12,8 +12,6 @@ async function request<TResponse>(
       return res.json()
     }
 
-    console.log({ res })
-
     const responseData = await res.json()
     const responseCode = res.status
     // error.message

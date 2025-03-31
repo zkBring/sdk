@@ -1,13 +1,17 @@
 import parseQueryParams from './parse-query-params'
+import createQueryString from './create-query-string'
 import request from './request'
 import numberToHex from './number-to-hex'
 import defineErrorText from './define-error-text'
 import defineHeaders from './define-headers'
+import keysToCamel from './keys-to-camel'
 
 export {
   numberToHex,
   request,
   parseQueryParams,
+  createQueryString,
   defineErrorText,
-  defineHeaders
+  defineHeaders,
+  keysToCamel
 }

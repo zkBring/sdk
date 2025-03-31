@@ -9,19 +9,16 @@ import IBringSDK, {
   TGetDrop,
   TGetDrops
 } from './types'
-import {
-  drop
-} from '../../mocks'
 import Drop from '../drop'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
-import { indexerApi } from '../../api'
+import { indexerApi, TDropData } from '../../api'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
   fee: number
   dropFactory: ethers.Contract
-  connectedAddress: string | null
+  connectedAddress: string | undefined
   transgateModule?: typeof TransgateConnect
 
   // #TODO: set API url and API key from constructor args 
@@ -156,7 +153,6 @@ class BringSDK implements IBringSDK {
     }
   }
 
-
   updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
     await this._initializeConnection(walletOrProvider)
     return true
@@ -189,34 +185,49 @@ class BringSDK implements IBringSDK {
     }
   }
 
-  getDrop: TGetDrop = async (
-    dropAddress
-  ) => {
-    const dropData = {
-      address: dropAddress,
-      token: '0xaebd651c93cd4eae21dd2049204380075548add5',
-      expiration: 1742477528995,
-      zkPassSchemaId: 'c38b96722bd24b64b8d349ffd6391a8c',
-      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23',
-      maxClaims: BigInt('10'),
-      amount: BigInt('100000'),
-      title: 'Hello',
-      description: ' world!',
+  private _convertDropData(dropData: TDropData) {
+    const dropParams = {
+      ...dropData,
+      address: dropData.dropAddress,
+      token: dropData.tokenAddress,
+      amount: BigInt(dropData.amount),
+      maxClaims: BigInt(dropData.maxClaims),
+      expiration: Number(dropData.expiration),
       connection: this.connection,
       transgateModule: this.transgateModule,
       indexerApiUrl: this._indexerApiUrl,
-      indexerApiKey: this._indexerApiKey
+      indexerApiKey: this._indexerApiKey,
+
+      // #TODO: fetch from API
+      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23',
+      // title: 'Hello',
+      // description: ' world!'
     }
-    const drop = new Drop(dropData)
-    return drop
+    return new Drop(dropParams)
+  }
+
+  getDrop: TGetDrop = async (
+    dropAddress
+  ) => {
+    const { drop: dropData } = await indexerApi.getDrop(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      dropAddress,
+      this.connectedAddress
+    )
+
+    return this._convertDropData(dropData)
   }
 
   getDrops: TGetDrops = async ({
     creator
   }) => {
-    return [
-      drop
-    ]
+    const { dropsArray } = await indexerApi.getDrops(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      creator
+    )
+    return dropsArray.map(drop => this._convertDropData(drop))
   }
 }
 
