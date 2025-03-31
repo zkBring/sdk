@@ -10,46 +10,37 @@ type TUploadDropMetadata = (
   description?: string
 ) => Promise<TUploadDropMetadataResponse>
 
+export interface TDropData {
+  dropAddress: string;
+  factoryAddress: string;
+  tokenAddress: string;
+  creatorAddress: string;
+  zkPassSchemaId: string;
+  amount: string;
+  expiration: string;
+  maxClaims: string;
+  metadataIpfsHash: string;
+  status: string;
+  blockTimestamp: string;
+}
+
+export interface TDropDataWithFetcher extends TDropData {
+  fetcherData?: {
+    accountAddress: string;
+    claimed: boolean;
+    claimTxHash: string | null;
+  };
+}
+
 type TGetDropResponse = {
   success: boolean;
-  drop: {
-    id: string;
-    dropAddress: string;
-    factoryAddress: string;
-    tokenAddress: string;
-    creatorAddress: string;
-    zkPassSchemaId: string;
-    amount: string;
-    expiration: string;
-    maxClaims: string;
-    metadataIpfsHash: string;
-    status: string;
-    blockTimestamp: string;
-    fetcherData?: {
-      accountAddress: string;
-      claimed: boolean;
-      claimTxHash: string | null;
-    };
-  };
+  drop: TDropDataWithFetcher;
 };
 
 type TGetDropsResponse = {
   success: boolean;
-  drops_array: {
-    id: string;
-    drop_address: string;
-    factory_address: string;
-    token_address: string;
-    creator_address: string;
-    zk_pass_schema_id: string;
-    amount: string;
-    expiration: string;
-    max_claims: string;
-    metadata_ipfs_hash: string;
-    status: string;
-    block_timestamp: string;
-  }[];
-  result_set: {
+  dropsArray: TDropData[];
+  resultSet: {
     offset: number;
     total: number;
     count: number;
@@ -58,9 +49,9 @@ type TGetDropsResponse = {
 
 type TGetDropClaimerResponse = {
   success: boolean;
-  account_address: string;
+  accountAddress: string;
   claimed: boolean;
-  claim_tx_hash: string;
+  claimTxHash: string;
 };
 
 type TGetDrop = (

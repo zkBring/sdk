@@ -9,13 +9,10 @@ import IBringSDK, {
   TGetDrop,
   TGetDrops
 } from './types'
-import {
-  drop
-} from '../../mocks'
 import Drop from '../drop'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
-import { indexerApi } from '../../api'
+import { indexerApi, TDropData } from '../../api'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
@@ -156,7 +153,6 @@ class BringSDK implements IBringSDK {
     }
   }
 
-
   updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
     await this._initializeConnection(walletOrProvider)
     return true
@@ -189,23 +185,14 @@ class BringSDK implements IBringSDK {
     }
   }
 
-  getDrop: TGetDrop = async (
-    dropAddress
-  ) => {
-    const { drop } = await indexerApi.getDrop(
-      this._indexerApiUrl,
-      this._indexerApiKey,
-      dropAddress,
-      this.connectedAddress
-    )
-
-    const dropData = {
-      ...drop,
-      address: drop.dropAddress,
-      token: drop.tokenAddress,
-      amount: BigInt(drop.amount),
-      maxClaims: BigInt(drop.maxClaims),
-      expiration: Number(drop.expiration),
+  private _convertDropData(dropData: TDropData) {
+    const dropParams = {
+      ...dropData,
+      address: dropData.dropAddress,
+      token: dropData.tokenAddress,
+      amount: BigInt(dropData.amount),
+      maxClaims: BigInt(dropData.maxClaims),
+      expiration: Number(dropData.expiration),
       connection: this.connection,
       transgateModule: this.transgateModule,
       indexerApiUrl: this._indexerApiUrl,
@@ -216,15 +203,31 @@ class BringSDK implements IBringSDK {
       title: 'Hello',
       description: ' world!'
     }
-    return new Drop(dropData)
+    return new Drop(dropParams)
+  }
+
+  getDrop: TGetDrop = async (
+    dropAddress
+  ) => {
+    const { drop: dropData } = await indexerApi.getDrop(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      dropAddress,
+      this.connectedAddress
+    )
+
+    return this._convertDropData(dropData)
   }
 
   getDrops: TGetDrops = async ({
     creator
   }) => {
-    return [
-      drop
-    ]
+    const { dropsArray } = await indexerApi.getDrops(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      creator
+    )
+    return dropsArray.map(drop => this._convertDropData(drop))
   }
 }
 

@@ -1,10 +1,10 @@
-import { TDrop } from "../../../../types"
+import Drop from "../../../drop"
 
 export type TGetDropsArgs = {
-  creator: string
+  creator?: string
 }
 
-type TGetDropsResponse = TDrop[]
+type TGetDropsResponse = Drop[]
 
 type TGetDrops = (args: TGetDropsArgs) => Promise<TGetDropsResponse>
 
