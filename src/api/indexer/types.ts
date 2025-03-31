@@ -11,6 +11,8 @@ type TUploadDropMetadata = (
 ) => Promise<TUploadDropMetadataResponse>
 
 export interface TDropData {
+  title: string;
+  description: string;
   dropAddress: string;
   factoryAddress: string;
   tokenAddress: string;

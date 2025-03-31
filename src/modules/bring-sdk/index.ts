@@ -200,8 +200,8 @@ class BringSDK implements IBringSDK {
 
       // #TODO: fetch from API
       zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23',
-      title: 'Hello',
-      description: ' world!'
+      // title: 'Hello',
+      // description: ' world!'
     }
     return new Drop(dropParams)
   }
