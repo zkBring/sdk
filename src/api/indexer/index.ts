@@ -1,8 +1,10 @@
 import { TRequests } from './types'
 import {
+  createQueryString,
   request,
-  defineHeaders }
-from '../../helpers'
+  defineHeaders,
+  keysToCamel
+} from '../../helpers'
 
 const requests: TRequests = {
   uploadDropMetadata: (
@@ -19,6 +21,41 @@ const requests: TRequests = {
         description
       })
     })
+  },
+  getDrop: (
+    apiHost,
+    apiKey,
+    dropAddress,
+    fetchAs
+  ) => {
+    const queryVariables = createQueryString({
+      fetch_as: fetchAs
+    })
+    return request(`${apiHost}/drops/${dropAddress}?${queryVariables}`, {
+      headers: defineHeaders(apiKey)
+    }).then((response: any) => keysToCamel(response));
+  },
+  getDrops: (
+    apiHost,
+    apiKey,
+    creatorAddress
+  ) => {
+    const queryVariables = createQueryString({
+      creator_address: creatorAddress
+    })
+    return request(`${apiHost}/drops?${queryVariables}`, {
+      headers: defineHeaders(apiKey)
+    }).then((response: any) => keysToCamel(response));
+  },
+  getDropClaimer: (
+    apiHost,
+    apiKey,
+    dropAddress,
+    claimerAddress
+  ) => {
+    return request(`${apiHost}/drops/${dropAddress}/claimer/${claimerAddress}`, {
+      headers: defineHeaders(apiKey)
+    }).then((response: any) => keysToCamel(response));
   }
 }
 
