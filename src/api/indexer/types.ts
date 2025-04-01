@@ -66,7 +66,9 @@ type TGetDrop = (
 type TGetDrops = (
   apiHost: string,
   apiKey: string | null,
-  creatorAddress?: string
+  creatorAddress?: string,
+  offset?: number,
+  limit?: number
 ) => Promise<TGetDropsResponse>
 
 type TGetDropClaimer = (

@@ -158,7 +158,6 @@ class BringSDK implements IBringSDK {
     return true
   }
 
-
   getFee: TGetFee = async () => {
     if (!this.fee) {
       this.fee = Number(await this.dropFactory.fee()) / 10000
@@ -199,9 +198,7 @@ class BringSDK implements IBringSDK {
       indexerApiKey: this._indexerApiKey,
 
       // #TODO: fetch from API
-      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23',
-      // title: 'Hello',
-      // description: ' world!'
+      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23'
     }
     return new Drop(dropParams)
   }
@@ -217,17 +214,25 @@ class BringSDK implements IBringSDK {
     )
 
     return this._convertDropData(dropData)
+
   }
 
   getDrops: TGetDrops = async ({
-    creator
+    creator,
+    offset,
+    limit
   }) => {
-    const { dropsArray } = await indexerApi.getDrops(
+    const { dropsArray, resultSet } = await indexerApi.getDrops(
       this._indexerApiUrl,
       this._indexerApiKey,
-      creator
+      creator,
+      offset,
+      limit
     )
-    return dropsArray.map(drop => this._convertDropData(drop))
+    return {
+      drops: dropsArray.map(drop => this._convertDropData(drop)),
+      resultSet
+    }
   }
 }
 

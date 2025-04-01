@@ -38,9 +38,13 @@ const requests: TRequests = {
   getDrops: (
     apiHost,
     apiKey,
-    creatorAddress
+    creatorAddress,
+    offset,
+    limit
   ) => {
     const queryVariables = createQueryString({
+      offset,
+      limit,
       creator_address: creatorAddress
     })
     return request(`${apiHost}/drops?${queryVariables}`, {
