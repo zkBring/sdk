@@ -10,9 +10,10 @@ import IBringSDK, {
   TGetDrops
 } from './types'
 import Drop from '../drop'
+import { TConstructorArgs as TDropConstructorArgs } from '../drop/types'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
-import { indexerApi, TDropData } from '../../api'
+import { indexerApi, TDropData, TDropDataWithFetcher } from '../../api'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
@@ -184,8 +185,8 @@ class BringSDK implements IBringSDK {
     }
   }
 
-  private _convertDropData(dropData: TDropData) {
-    const dropParams = {
+  private _convertDropData(dropData: TDropData | TDropDataWithFetcher) {
+    let dropParams: TDropConstructorArgs = {
       ...dropData,
       address: dropData.dropAddress,
       token: dropData.tokenAddress,
@@ -199,6 +200,16 @@ class BringSDK implements IBringSDK {
 
       // #TODO: fetch from API
       zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23'
+    }
+
+    // If dropData includes fetcherData, set it as connected user data 
+    if ('fetcherData' in dropData && dropData.fetcherData) {
+      dropParams = {
+        ...dropParams,
+        connectedUserAddress: dropData.fetcherData.accountAddress,
+        hasConnectedUserClaimed: dropData.fetcherData.claimed,
+        connectedUserClaimTxHash: dropData.fetcherData.claimTxHash
+      };
     }
     return new Drop(dropParams)
   }

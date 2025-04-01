@@ -16,6 +16,9 @@ type TConstructorArgs = {
   transgateModule?: typeof TransgateConnect,
   indexerApiUrl: string
   indexerApiKey: string | null
+  connectedUserAddress?: string
+  hasConnectedUserClaimed?: boolean
+  connectedUserClaimTxHash?: string | null
 }
 
 

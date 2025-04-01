@@ -28,9 +28,9 @@ export interface TDropData {
 
 export interface TDropDataWithFetcher extends TDropData {
   fetcherData?: {
-    accountAddress: string;
-    claimed: boolean;
-    claimTxHash: string | null;
+    accountAddress?: string;
+    claimed?: boolean;
+    claimTxHash?: string | null;
   };
 }
 
