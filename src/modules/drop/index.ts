@@ -95,6 +95,23 @@ class Drop implements IDropSDK {
     return true
   }
 
+  fetchConnectedUserClaimData: () => Promise<boolean> = async () => {
+    if (!this.canSign()) throw new Error("Cannot get connected address claim data: address is not connected.")
+    const connectedAddress = await (this._connection as ethers.Signer).getAddress()
+    const { accountAddress, claimed, claimTxHash } = await indexerApi.getDropClaimer(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      this.address,
+      connectedAddress
+    )
+
+    this.connectedUserAddress = accountAddress
+    this.connectedUserClaimTxHash = claimTxHash
+    this.hasConnectedUserClaimed = claimed
+
+    return true
+  }
+
   private canSign(): boolean {
     return typeof (this._connection as ethers.Signer).getAddress === 'function'
   }
