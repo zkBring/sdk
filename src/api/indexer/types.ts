@@ -24,6 +24,7 @@ export interface TDropData {
   metadataIpfsHash: string;
   status: string;
   blockTimestamp: string;
+  claimsCount: string
 }
 
 export interface TDropDataWithFetcher extends TDropData {

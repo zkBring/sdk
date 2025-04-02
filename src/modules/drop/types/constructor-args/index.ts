@@ -7,6 +7,7 @@ type TConstructorArgs = {
   token: string
   amount: bigint
   maxClaims: bigint
+  claimsCount?: bigint
   title: string
   description: string
   zkPassSchemaId: string

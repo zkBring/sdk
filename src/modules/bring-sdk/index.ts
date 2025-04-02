@@ -193,6 +193,7 @@ class BringSDK implements IBringSDK {
       maxClaims: BigInt(dropData.maxClaims),
       expiration: Number(dropData.expiration),
       connection: this.connection,
+      claimsCount: BigInt(dropData.claimsCount),
       transgateModule: this.transgateModule,
       indexerApiUrl: this._indexerApiUrl,
       indexerApiKey: this._indexerApiKey,

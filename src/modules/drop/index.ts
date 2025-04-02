@@ -34,6 +34,7 @@ class Drop implements IDropSDK {
   zkPassAppId: string
   expiration: number
   dropContract: ethers.Contract
+  claimsCount?: bigint
 
   connectedUserAddress?: string
   hasConnectedUserClaimed?: boolean
@@ -58,6 +59,7 @@ class Drop implements IDropSDK {
     expiration,
     connection,
     transgateModule,
+    claimsCount,
     indexerApiUrl,
     indexerApiKey,
     connectedUserAddress,
@@ -69,6 +71,7 @@ class Drop implements IDropSDK {
     this.token = token
     this.amount = amount
     this.maxClaims = maxClaims
+    this.claimsCount = claimsCount
     this.title = title
     this.description = description
     this.zkPassSchemaId = zkPassSchemaId
