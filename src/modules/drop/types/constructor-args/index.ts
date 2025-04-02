@@ -19,6 +19,7 @@ type TConstructorArgs = {
   connectedUserAddress?: string
   hasConnectedUserClaimed?: boolean
   connectedUserClaimTxHash?: string | null
+  creatorAddress: string
 }
 
 

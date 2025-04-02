@@ -38,6 +38,7 @@ class Drop implements IDropSDK {
   connectedUserAddress?: string
   hasConnectedUserClaimed?: boolean
   connectedUserClaimTxHash?: string | null
+  creatorAddress: string
 
   private _connection: ethers.ContractRunner
   private _transgateModule?: typeof TransgateConnect
@@ -61,7 +62,8 @@ class Drop implements IDropSDK {
     indexerApiKey,
     connectedUserAddress,
     hasConnectedUserClaimed,
-    connectedUserClaimTxHash
+    connectedUserClaimTxHash,
+    creatorAddress
   }: TConstructorArgs) {
     this.address = address
     this.token = token
@@ -78,6 +80,7 @@ class Drop implements IDropSDK {
     this.connectedUserAddress = connectedUserAddress
     this.hasConnectedUserClaimed = hasConnectedUserClaimed
     this.connectedUserClaimTxHash = connectedUserClaimTxHash
+    this.creatorAddress = creatorAddress
     this._initializeConnection(connection)
   }
 

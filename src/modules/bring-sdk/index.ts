@@ -19,7 +19,6 @@ class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
   fee: number
   dropFactory: ethers.Contract
-  connectedAddress: string | undefined
   transgateModule?: typeof TransgateConnect
 
   // #TODO: set API url and API key from constructor args 
@@ -37,20 +36,13 @@ class BringSDK implements IBringSDK {
     this._indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
   }
 
-  private _initializeConnection = async (walletOrProvider: ethers.ContractRunner) => {
+  private _initializeConnection = (walletOrProvider: ethers.ContractRunner) => {
     this.connection = walletOrProvider
     this.dropFactory = new ethers.Contract(
       configs.BASE_SEPOLIA_DROP_FACTORY,
       DropFactory.abi,
       this.connection
     )
-    if (this.canSign()) {
-      await this.getConnectedAddress()
-    }
-  }
-
-  private getConnectedAddress = async () => {
-    this.connectedAddress = await (this.connection as ethers.Signer).getAddress()
   }
 
   private canSign(): boolean {
@@ -75,6 +67,12 @@ class BringSDK implements IBringSDK {
       description
     )
 
+    if (!this.connection) {
+      throw new Error('Signer is not provided')
+    }
+
+    const connectedAddress = this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined
+
     const { hash: txHash } = await this.dropFactory.createDrop(
       token,
       amount,
@@ -91,7 +89,7 @@ class BringSDK implements IBringSDK {
           // Note: DropCreated indexes only the first three parameters (creator, drop, token).
           // We filter by creator; drop and token are left as null (wildcards).
           const filter = this.dropFactory.filters.DropCreated(
-            this.connectedAddress,
+            connectedAddress,
             null,
             null
           );
@@ -133,7 +131,8 @@ class BringSDK implements IBringSDK {
               transgateModule: this.transgateModule,
               connection: this.connection,
               indexerApiUrl: this._indexerApiUrl,
-              indexerApiKey: this._indexerApiKey
+              indexerApiKey: this._indexerApiKey,
+              creatorAddress: _creator
             })
             resolve({
               drop,
@@ -217,11 +216,14 @@ class BringSDK implements IBringSDK {
   getDrop: TGetDrop = async (
     dropAddress
   ) => {
+    
+    const connectedAddress = this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined
+
     const { drop: dropData } = await indexerApi.getDrop(
       this._indexerApiUrl,
       this._indexerApiKey,
       dropAddress,
-      this.connectedAddress
+      connectedAddress
     )
 
     return this._convertDropData(dropData)
