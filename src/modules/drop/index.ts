@@ -1,4 +1,4 @@
-import { ethers, hexlify, toUtf8Bytes } from 'ethers'
+import { ethers, hexlify, toUtf8Bytes, toUtf8String } from 'ethers'
 import TransgateConnect from "@zkpass/transgate-js-sdk"
 import IDropSDK, {
   TClaim,
@@ -301,7 +301,7 @@ class Drop implements IDropSDK {
 
     // generate webproof via zkPass extension
     const webproof = await connector.launch(
-      this.zkPassSchemaId,
+      toUtf8String(this.zkPassSchemaId),
       webproofRecipient) as TWebproof
 
     return { webproof, ephemeralKey: ephemeralKey.privateKey }
