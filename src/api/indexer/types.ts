@@ -1,3 +1,5 @@
+import { TDropStatus } from '../../types'
+
 type TUploadDropMetadataResponse = {
   success: boolean,
   metadataIpfsHash: string
@@ -22,7 +24,7 @@ export interface TDropData {
   expiration: string;
   maxClaims: string;
   metadataIpfsHash: string;
-  status: string;
+  status: TDropStatus;
   blockTimestamp: string;
   claimsCount: string
   decimals: number
@@ -71,7 +73,9 @@ type TGetDrops = (
   apiKey: string | null,
   creatorAddress?: string,
   offset?: number,
-  limit?: number
+  limit?: number,
+  status?: TDropStatus,
+  staked?: boolean
 ) => Promise<TGetDropsResponse>
 
 type TGetDropClaimer = (

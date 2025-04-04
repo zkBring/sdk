@@ -14,14 +14,13 @@ import IDropSDK, {
   TStake
 } from './types'
 import { ValidationError } from '../../errors'
-import { errors } from '../../texts'
-import * as configs from '../../configs'
 import { DropERC20 } from '../../abi'
 import { indexerApi } from '../../api'
 import {
   generateEphemeralKeySig,
   xorAddresses
 } from '../../utils'
+import { TDropStatus } from '../../types'
 
 class Drop implements IDropSDK {
   address: string
@@ -35,7 +34,7 @@ class Drop implements IDropSDK {
   expiration: number
   dropContract: ethers.Contract
   claimsCount?: bigint
-
+  status: TDropStatus
   connectedUserAddress?: string
   hasConnectedUserClaimed?: boolean
   connectedUserClaimTxHash?: string | null
@@ -70,7 +69,8 @@ class Drop implements IDropSDK {
     connectedUserClaimTxHash,
     creatorAddress,
     decimals,
-    symbol
+    symbol,
+    status
   }: TConstructorArgs) {
     this.address = address
     this.token = token
@@ -91,6 +91,7 @@ class Drop implements IDropSDK {
     this.creatorAddress = creatorAddress
     this.decimals = decimals
     this.symbol = symbol
+    this.status = status
     this._initializeConnection(connection)
   }
 

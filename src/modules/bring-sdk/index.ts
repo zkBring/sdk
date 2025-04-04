@@ -132,7 +132,8 @@ class BringSDK implements IBringSDK {
               connection: this.connection,
               indexerApiUrl: this._indexerApiUrl,
               indexerApiKey: this._indexerApiKey,
-              creatorAddress: _creator
+              creatorAddress: _creator,
+              status: 'active'
             })
             resolve({
               drop,
@@ -154,7 +155,7 @@ class BringSDK implements IBringSDK {
   }
 
   updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
-    await this._initializeConnection(walletOrProvider)
+    this._initializeConnection(walletOrProvider)
     return true
   }
 
@@ -199,7 +200,7 @@ class BringSDK implements IBringSDK {
       indexerApiKey: this._indexerApiKey,
 
       // #TODO: fetch from API
-      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23'
+      zkPassAppId: '0acb96f1-6e0d-4414-a744-96f2620a6682'
     }
 
     // If dropData includes fetcherData, set it as connected user data 
@@ -234,14 +235,18 @@ class BringSDK implements IBringSDK {
   getDrops: TGetDrops = async ({
     creator,
     offset,
-    limit
+    limit,
+    staked,
+    status
   }) => {
     const { dropsArray, resultSet } = await indexerApi.getDrops(
       this._indexerApiUrl,
       this._indexerApiKey,
       creator,
       offset,
-      limit
+      limit,
+      status,
+      staked
     )
     return {
       drops: dropsArray.map(drop => this._convertDropData(drop)),

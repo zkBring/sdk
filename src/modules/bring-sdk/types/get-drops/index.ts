@@ -1,9 +1,12 @@
+import { TDropStatus } from "../../../../types"
 import Drop from "../../../drop"
 
 export type TGetDropsArgs = {
   creator?: string
   offset?: number
   limit?: number
+  staked?: boolean
+  status?: TDropStatus
 }
 
 type TGetDropsResponse = {

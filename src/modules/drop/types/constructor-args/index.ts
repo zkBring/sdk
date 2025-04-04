@@ -1,6 +1,9 @@
 
 import { ethers } from 'ethers'
-import TransgateConnect from "@zkpass/transgate-js-sdk";
+import TransgateConnect from "@zkpass/transgate-js-sdk"
+import {
+  TDropStatus
+} from '../../../../types'
 
 type TConstructorArgs = {
   address: string
@@ -23,6 +26,8 @@ type TConstructorArgs = {
   creatorAddress: string
   decimals?: number
   symbol?: string
+
+  status: TDropStatus
 }
 
 

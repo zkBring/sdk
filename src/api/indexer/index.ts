@@ -40,12 +40,16 @@ const requests: TRequests = {
     apiKey,
     creatorAddress,
     offset,
-    limit
+    limit,
+    status,
+    staked
   ) => {
     const queryVariables = createQueryString({
       offset,
       limit,
-      creator_address: creatorAddress
+      creator_address: creatorAddress,
+      status,
+      staked
     })
     return request(`${apiHost}/drops?${queryVariables}`, {
       headers: defineHeaders(apiKey)
