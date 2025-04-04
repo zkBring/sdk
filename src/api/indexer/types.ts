@@ -25,6 +25,8 @@ export interface TDropData {
   status: string;
   blockTimestamp: string;
   claimsCount: string
+  decimals: number
+  symbol: string
 }
 
 export interface TDropDataWithFetcher extends TDropData {
