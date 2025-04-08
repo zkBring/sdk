@@ -149,35 +149,16 @@ class Drop implements IDropSDK {
     return {
       txHash: tx.hash,
       waitForClaim: async () => {
-        return new Promise(async (resolve, reject) => {
-          // Create a filter for the Claimed event.
-          // Claimed event signature: event Claimed(address indexed recipient, bytes32 uHash);
-          const filter = this.dropContract.filters.Claimed(recipient, null);
-
-          // Define the listener that will handle the event.
-          const listener = (event: any) => {
-            if (!event.args) {
-              return;
+        return new Promise((resolve, reject) => {
+          const myInterval = setInterval(async () => {
+            const claimed = await this.hasUserClaimed({ uHash: webproof.uHash })
+            if (claimed) {
+              resolve(true)
+              clearInterval(myInterval)
             }
-            const [_recipient, _uHash] = event.args
-
-            // Verify that the event's uHash matches the expected webproof.uHash.
-            if (_uHash !== webproof.uHash) {
-              return;
-            }
-            // Remove the listener when a matching event is captured.
-            this.dropContract.off(filter, listener);
-
-            // Resolve with the event data.                        
-            resolve(event);
-          };
-
-          // Start listening for the Claimed event.
-          this.dropContract.on(filter, listener);
-
-          // Add a timeout to reject the promise if no event fires within 10 minutes.
+          }, 1000)
+          
           setTimeout(() => {
-            this.dropContract.off(filter, listener);
             reject(new Error("Timeout waiting for Claimed event"));
           }, 600000); // 600,000 ms = 10 minutes
         })

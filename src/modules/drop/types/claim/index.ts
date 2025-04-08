@@ -6,9 +6,7 @@ export type TClaimArgs = {
   recipient: string
 }
 
-type TWaitForClaimResponse = {
-  event: any
-}
+type TWaitForClaimResponse = boolean
 
 export type TClaimResponse = {
   txHash: string
