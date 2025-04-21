@@ -163,9 +163,9 @@ if (isClaimed) {
 import {
   BringSDK,
   Drop
-} from 'zkbring-sdk';
+} from 'zkbring-sdk'
 
-const sdk = new BringSDK({ walletOrProvider: signer, transgateModule });
+const sdk = new BringSDK({ walletOrProvider: signer, transgateModule })
 
 // Approve tokens before creating a drop
 const fees = await sdk.calculateFee({
@@ -175,7 +175,7 @@ const fees = await sdk.calculateFee({
 
 const { totalAmount } = fees
 
-const contractInstance = new ethers.Contract('0x...', ERC20Contract.abi, signer);
+const contractInstance = new ethers.Contract('0x...', ERC20Contract.abi, signer)
 const iface = new ethers.Interface(ERC20Contract.abi)
 const data = iface.encodeFunctionData('approve', [
   dropFactoryBaseSepoliaAddress,
@@ -203,11 +203,14 @@ const { txHash, waitForDrop } = await sdk.createDrop({
 
 await waitForDrop()
 
+
+// Claim the drop
 const drop = await sdk.getDrop(dropId, connectedAddress)
 
 if (await drop.isTransgateAvailable()) {
   const { webproof, ephemeralKey } = await drop.generateWebproof()
 
+  // not needed if signer was passed initially to SDK instance
   drop.updateWalletOrProvider(signer)
 
   const hasClaimed = await drop.hasUserClaimed({ uHash: webproof.uHash })
