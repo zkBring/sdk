@@ -1,7 +1,8 @@
 import Drop from "../../../drop"
 
 type TGetDrop = (
-  dropAddress: string
+  dropAddress: string,
+  userAddress?: string
 ) => Promise<Drop>
 
 export default TGetDrop

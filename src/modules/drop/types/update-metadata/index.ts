@@ -3,8 +3,13 @@ export type TUpdateMetadataArgs = {
   description?: string
 }
 
+type TWaitForUpdateResponse = {
+  event: any
+}
+
 export type TUpdateMetadataResponse = {
-  txHash: string
+  txHash: string,
+  waitForUpdate: () => Promise<TWaitForUpdateResponse>
 }
 
 type TUpdateMetadata = (args: TUpdateMetadataArgs) => Promise<TUpdateMetadataResponse>

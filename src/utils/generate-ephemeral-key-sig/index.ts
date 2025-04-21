@@ -5,11 +5,16 @@ export type TGenerateEphemeralKeySigArgs = {
   recipient: string;
 };
 
+export type TGenerateEphemeralKeySigResponse = {
+  signature: string;
+  signer: string;
+};
+
 export type TGenerateEphemeralKeySig = (
   args: TGenerateEphemeralKeySigArgs
-) => Promise<string>;
+) => TGenerateEphemeralKeySigResponse;
 
-const generateEphemeralKeySig: TGenerateEphemeralKeySig = async ({ ephemeralKey, recipient }) => {
+const generateEphemeralKeySig: TGenerateEphemeralKeySig = ({ ephemeralKey, recipient }) => {
   const wallet = new ethers.Wallet(ephemeralKey)
   const abiCoder = new ethers.AbiCoder();
   const encodedParams = abiCoder.encode(
@@ -20,7 +25,7 @@ const generateEphemeralKeySig: TGenerateEphemeralKeySig = async ({ ephemeralKey,
   const messageHash = ethers.hashMessage(ethers.getBytes(dataHash));
   const splitSig = wallet.signingKey.sign(messageHash);
   const signature = ethers.Signature.from(splitSig).serialized
-  return signature
+  return { signature, signer: wallet.address }
 }
 
 export default generateEphemeralKeySig

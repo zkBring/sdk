@@ -9,19 +9,21 @@ import IBringSDK, {
   TGetDrop,
   TGetDrops
 } from './types'
-import {
-  drop
-} from '../../mocks'
 import Drop from '../drop'
+import { TConstructorArgs as TDropConstructorArgs } from '../drop/types'
 import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
+import { indexerApi, TDropData, TDropDataWithFetcher } from '../../api'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
   fee: number
   dropFactory: ethers.Contract
-  connectedAddress: string | null
   transgateModule?: typeof TransgateConnect
+
+  // #TODO: set API url and API key from constructor args 
+  private _indexerApiUrl: string
+  private _indexerApiKey: string | null
 
   constructor({
     walletOrProvider,
@@ -30,22 +32,17 @@ class BringSDK implements IBringSDK {
     this.transgateModule = transgateModule
     this._initializeConnection(walletOrProvider)
     this.getFee()
+
+    this._indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
   }
 
-  private _initializeConnection = async (walletOrProvider: ethers.ContractRunner) => {
+  private _initializeConnection = (walletOrProvider: ethers.ContractRunner) => {
     this.connection = walletOrProvider
     this.dropFactory = new ethers.Contract(
       configs.BASE_SEPOLIA_DROP_FACTORY,
       DropFactory.abi,
       this.connection
     )
-    if (this.canSign()) {
-      await this.getConnectedAddress()
-    }
-  }
-
-  private getConnectedAddress = async () => {
-    this.connectedAddress = await (this.connection as ethers.Signer).getAddress()
   }
 
   private canSign(): boolean {
@@ -63,7 +60,18 @@ class BringSDK implements IBringSDK {
     expiration
   }) => {
     const schemaIdHex = hexlify(toUtf8Bytes(zkPassSchemaId))
-    const metadataIpfsHash = ethers.encodeBytes32String("metadata")
+    const { metadataIpfsHash } = await indexerApi.uploadDropMetadata(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      title,
+      description
+    )
+
+    if (!this.connection) {
+      throw new Error('Signer is not provided')
+    }
+
+    const connectedAddress = this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined
 
     const { hash: txHash } = await this.dropFactory.createDrop(
       token,
@@ -81,7 +89,7 @@ class BringSDK implements IBringSDK {
           // Note: DropCreated indexes only the first three parameters (creator, drop, token).
           // We filter by creator; drop and token are left as null (wildcards).
           const filter = this.dropFactory.filters.DropCreated(
-            this.connectedAddress,
+            connectedAddress,
             null,
             null
           );
@@ -121,7 +129,11 @@ class BringSDK implements IBringSDK {
               expiration,
               address: _dropAddress,
               transgateModule: this.transgateModule,
-              connection: this.connection
+              connection: this.connection,
+              indexerApiUrl: this._indexerApiUrl,
+              indexerApiKey: this._indexerApiKey,
+              creatorAddress: _creator,
+              status: 'active'
             })
             resolve({
               drop,
@@ -142,12 +154,10 @@ class BringSDK implements IBringSDK {
     }
   }
 
-
   updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
-    await this._initializeConnection(walletOrProvider)
+    this._initializeConnection(walletOrProvider)
     return true
   }
-
 
   getFee: TGetFee = async () => {
     if (!this.fee) {
@@ -175,32 +185,76 @@ class BringSDK implements IBringSDK {
     }
   }
 
-  getDrop: TGetDrop = async (
-    dropAddress
-  ) => {
-    const dropData = {
-      address: dropAddress,
-      token: '0xaebd651c93cd4eae21dd2049204380075548add5',
-      expiration: 1742477528995,
-      zkPassSchemaId: 'c38b96722bd24b64b8d349ffd6391a8c',
-      zkPassAppId: '6543a426-2afe-4efa-9d23-2d6ce8723e23',
-      maxClaims: BigInt('10'),
-      amount: BigInt('100000'),
-      title: 'Hello',
-      description: ' world!',
+  private _convertDropData(dropData: TDropData | TDropDataWithFetcher) {
+    let dropParams: TDropConstructorArgs = {
+      ...dropData,
+      address: dropData.dropAddress,
+      token: dropData.tokenAddress,
+      amount: BigInt(dropData.amount),
+      maxClaims: BigInt(dropData.maxClaims),
+      expiration: Number(dropData.expiration),
       connection: this.connection,
-      transgateModule: this.transgateModule
+      claimsCount: BigInt(dropData.claimsCount),
+      transgateModule: this.transgateModule,
+      indexerApiUrl: this._indexerApiUrl,
+      indexerApiKey: this._indexerApiKey,
+
+      // #TODO: fetch from API
+      zkPassAppId: '0acb96f1-6e0d-4414-a744-96f2620a6682'
     }
-    const drop = new Drop(dropData)
-    return drop
+
+    // If dropData includes fetcherData, set it as connected user data 
+    if ('fetcherData' in dropData && dropData.fetcherData) {
+      dropParams = {
+        ...dropParams,
+        connectedUserAddress: dropData.fetcherData.accountAddress,
+        hasConnectedUserClaimed: dropData.fetcherData.claimed,
+        connectedUserClaimTxHash: dropData.fetcherData.claimTxHash
+      };
+    }
+    return new Drop(dropParams)
+  }
+
+  getDrop: TGetDrop = async (
+    dropAddress,
+    userAddress
+  ) => {
+    
+    const connectedAddress = userAddress || (this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined)
+
+    const { drop: dropData } = await indexerApi.getDrop(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      dropAddress,
+      connectedAddress
+    )
+
+    return this._convertDropData(dropData)
+
   }
 
   getDrops: TGetDrops = async ({
-    creator
+    creator,
+    offset,
+    limit,
+    staked,
+    listed,
+    status
   }) => {
-    return [
-      drop
-    ]
+    const { dropsArray, resultSet } = await indexerApi.getDrops(
+      this._indexerApiUrl,
+      this._indexerApiKey,
+      creator,
+      offset,
+      limit,
+      status,
+      listed,
+      staked
+    )
+    return {
+      drops: dropsArray.map(drop => this._convertDropData(drop)),
+      resultSet
+    }
   }
 }
 

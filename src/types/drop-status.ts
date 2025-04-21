@@ -1,3 +1,4 @@
-type TDropStatus = 'active' | 'stopped' | ' finished'
+type TDropStatus = 'active' | 'stopped' | 'finished' | 'expired'
+
 
 export default TDropStatus

@@ -6,8 +6,11 @@ export type TClaimArgs = {
   recipient: string
 }
 
+type TWaitForClaimResponse = boolean
+
 export type TClaimResponse = {
   txHash: string
+  waitForClaim: () => Promise<TWaitForClaimResponse>
 }
 
 type TClaim = ({ webproof, ephemeralKey, recipient }: TClaimArgs) => Promise<TClaimResponse>

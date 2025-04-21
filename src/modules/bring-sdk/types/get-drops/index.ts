@@ -1,10 +1,23 @@
-import { TDrop } from "../../../../types"
+import { TDropStatus } from "../../../../types"
+import Drop from "../../../drop"
 
 export type TGetDropsArgs = {
-  creator: string
+  creator?: string
+  offset?: number
+  limit?: number
+  staked?: boolean
+  listed?: boolean
+  status?: TDropStatus
 }
 
-type TGetDropsResponse = TDrop[]
+type TGetDropsResponse = {
+  drops: Drop[]
+  resultSet: {
+    total: number
+    count: number
+    offset: number
+  }
+}
 
 type TGetDrops = (args: TGetDropsArgs) => Promise<TGetDropsResponse>
 
