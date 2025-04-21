@@ -1,6 +1,6 @@
 {
   "name": "zkbring-sdk",
-  "version": "0.0.1-alpha-rc.17",
+  "version": "0.0.1-alpha-rc.19",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

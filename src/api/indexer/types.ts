@@ -75,7 +75,8 @@ type TGetDrops = (
   offset?: number,
   limit?: number,
   status?: TDropStatus,
-  staked?: boolean
+  staked?: boolean,
+  listed?: boolean
 ) => Promise<TGetDropsResponse>
 
 type TGetDropClaimer = (

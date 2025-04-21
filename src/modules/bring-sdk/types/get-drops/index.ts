@@ -6,6 +6,7 @@ export type TGetDropsArgs = {
   offset?: number
   limit?: number
   staked?: boolean
+  listed?: boolean
   status?: TDropStatus
 }
 

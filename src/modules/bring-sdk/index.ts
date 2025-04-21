@@ -216,10 +216,11 @@ class BringSDK implements IBringSDK {
   }
 
   getDrop: TGetDrop = async (
-    dropAddress
+    dropAddress,
+    userAddress
   ) => {
     
-    const connectedAddress = this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined
+    const connectedAddress = userAddress || (this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined)
 
     const { drop: dropData } = await indexerApi.getDrop(
       this._indexerApiUrl,
@@ -237,6 +238,7 @@ class BringSDK implements IBringSDK {
     offset,
     limit,
     staked,
+    listed,
     status
   }) => {
     const { dropsArray, resultSet } = await indexerApi.getDrops(
@@ -246,6 +248,7 @@ class BringSDK implements IBringSDK {
       offset,
       limit,
       status,
+      listed,
       staked
     )
     return {
