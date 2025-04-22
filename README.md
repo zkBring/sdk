@@ -4,7 +4,7 @@ The `zkbring-sdk` allows you to create and manage privacy-preserving ZK-powered 
 
 ---
 
-## 📦 Installation
+## Installation
 
 Install the SDK using **Yarn**:
 
@@ -14,90 +14,35 @@ yarn add zkbring-sdk
 
 ---
 
-## 🔧 Importing the SDK
+## 🔧 Importing the SDK and TransgateConnect
 
 ```ts
+import TransgateConnect from "@zkpass/transgate-js-sdk"
 import {
-  BringSDK,
-  Drop
+  BringSDK
 } from 'zkbring-sdk'
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Initialize the SDK
 
 ```ts
+
 const sdk = new BringSDK({
-  walletOrProvider: signer, // optional, required for creating or claiming a drop
-  transgateModule: transgateModule // optional, for zkPass functionality, required for claiming a drop
+  walletOrProvider: signer, // optional, required for claiming a drop
+  transgateModule // optional, for zkPass functionality, required for claiming a drop
 })
 ```
 
----
-
-### Token Approval (Before Creating a Drop)
-
-Before creating a drop, make sure the drop factory is approved to transfer tokens on behalf of the user.
-
-```ts
-const fees = await sdk.calculateFee({
-  amount: tokensPerClaim, // BigInt
-  maxClaims: totalClaims // BigInt
-})
-
-const {
-  amount,        // BigInt
-  totalAmount,   // BigInt
-  feeAmount,     // BigInt
-  fee            // number
-} = fees
-
-const contractInstance = new ethers.Contract('0x...', ERC20Contract.abi, signer)
-
-const iface = new ethers.Interface(ERC20Contract.abi);
-const data = iface.encodeFunctionData('approve', [
-  dropFactoryBaseSepoliaAddress,
-  String(totalAmount)
-])
-
-await signer.sendTransaction({
-  to: '0x...',    // token address
-  from: '0x...',  // user address
-  value: 0,
-  data
-})
-```
-
----
-
-### Create a Drop
-
-```ts
-const { txHash, waitForDrop } = await sdk.createDrop({
-  token: '0x...',
-  expiration: 1742477528995, // timestamp in milliseconds
-  zkPassSchemaId: 'string',
-  zkPassAppId: 'string',
-  maxClaims: BigInt('10'),
-  amount: ethers.parseUnits('10', decimals),
-  title: 'My title',
-  description: 'Description'
-})
-```
-
-Use `waitForDrop()` to wait until the drop is fully deployed.
-
----
 
 ### Get Drop Instance
 
 To retrieve an existing drop by its ID and user address:
 
 ```ts
-const sdk = new BringSDK({});
 const drop = await sdk.getDrop(
   <DROP_ID>,
   '0x...' // address of connected user if available. Can be useful to retrieve data for SSR
@@ -157,7 +102,7 @@ if (isClaimed) {
 
 ---
 
-## 🧪 Full Example
+## Full Example
 
 ```ts
 import {
@@ -167,45 +112,8 @@ import {
 
 const sdk = new BringSDK({ walletOrProvider: signer, transgateModule })
 
-// Approve tokens before creating a drop
-const fees = await sdk.calculateFee({
-  amount: BigInt("10"),
-  maxClaims: BigInt("100")
-})
-
-const { totalAmount } = fees
-
-const contractInstance = new ethers.Contract('0x...', ERC20Contract.abi, signer)
-const iface = new ethers.Interface(ERC20Contract.abi)
-const data = iface.encodeFunctionData('approve', [
-  dropFactoryBaseSepoliaAddress,
-  String(totalAmount)
-])
-
-await signer.sendTransaction({
-  to: '0x...',
-  from: '0x...',
-  value: 0,
-  data
-})
-
-// Create the drop
-const { txHash, waitForDrop } = await sdk.createDrop({
-  token: '0x...',
-  expiration: 1742477528995,
-  zkPassSchemaId: '...',
-  zkPassAppId: '...',
-  maxClaims: BigInt("100"),
-  amount: ethers.parseUnits("10", 18),
-  title: "My First Drop",
-  description: "Claim tokens with ZK verification"
-})
-
-await waitForDrop()
-
-
 // Claim the drop
-const drop = await sdk.getDrop(dropId, connectedAddress)
+const drop = await sdk.getDrop(dropId, '0x...')
 
 if (await drop.isTransgateAvailable()) {
   const { webproof, ephemeralKey } = await drop.generateWebproof()
