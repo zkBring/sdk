@@ -5,6 +5,8 @@ import numberToHex from './number-to-hex'
 import defineErrorText from './define-error-text'
 import defineHeaders from './define-headers'
 import keysToCamel from './keys-to-camel'
+import defineFacrtoryAddress from './define-factory-address'
+import defineIndexerApiUrl from './define-indexer-api-url'
 
 export {
   numberToHex,
@@ -13,5 +15,7 @@ export {
   createQueryString,
   defineErrorText,
   defineHeaders,
-  keysToCamel
+  keysToCamel,
+  defineFacrtoryAddress,
+  defineIndexerApiUrl
 }

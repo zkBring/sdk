@@ -5,6 +5,6 @@ type TUpdateWalletOrProviderArgs = {
 }
 
 
-type TUpdateWalletOrProvider = (TUpdateWalletOrProviderArgs) => Promise<bool>
+type TUpdateWalletOrProvider = (TUpdateWalletOrProviderArgs) => Promise<boolean>
 
 export default TUpdateWalletOrProvider
