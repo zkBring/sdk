@@ -1,5 +1,5 @@
 import { ethers, hexlify, toUtf8Bytes } from 'ethers'
-import TransgateConnect from "@zkpass/transgate-js-sdk";
+import TransgateConnect from "@zkpass/transgate-js-sdk"
 import IBringSDK, {
   TConstructorArgs,
   TCreateDrop,
@@ -16,7 +16,11 @@ import { DropFactory } from '../../abi'
 import { indexerApi, TDropData, TDropDataWithFetcher } from '../../api'
 import { ValidationError } from '../../errors'
 import { errors } from '../../texts'
-import { defineFacrtoryAddress, defineIndexerApiUrl } from '../../helpers';
+import {
+  defineFacrtoryAddress,
+  defineIndexerApiUrl,
+  defineZkPassAppId
+} from '../../helpers'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
@@ -24,6 +28,7 @@ class BringSDK implements IBringSDK {
   dropFactory: ethers.Contract
   address?: string
   chainId: bigint
+  zkPassAppId: string
   transgateModule?: typeof TransgateConnect
 
   private _indexerApiUrl: string
@@ -50,6 +55,7 @@ class BringSDK implements IBringSDK {
 
     this.address = address
     this.chainId = chainId
+    this.zkPassAppId = defineZkPassAppId(chainId)
     this._indexerApiUrl = defineIndexerApiUrl(chainId)
   }
 
@@ -253,8 +259,7 @@ class BringSDK implements IBringSDK {
       indexerApiUrl: this._indexerApiUrl,
       indexerApiKey: this._indexerApiKey,
 
-      // #TODO: fetch from API
-      zkPassAppId: '0acb96f1-6e0d-4414-a744-96f2620a6682'
+      zkPassAppId: this.zkPassAppId
     }
 
     // If dropData includes fetcherData, set it as connected user data 
