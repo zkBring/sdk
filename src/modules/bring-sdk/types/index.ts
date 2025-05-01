@@ -5,6 +5,7 @@ import TCalculateFee from './calculate-fee'
 import TGetDrop from './get-drop'
 import TGetDrops from './get-drops'
 import TUpdateWalletOrProvider from "./update-wallet-or-provider"
+import TInitialize from './initialize'
 
 interface IBringSDK {
   createDrop: TCreateDrop
@@ -22,6 +23,7 @@ export {
   TGetFee,
   TGetDrop,
   TGetDrops,
+  TInitialize,
   TUpdateWalletOrProvider
 }
 

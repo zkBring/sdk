@@ -1,5 +1,5 @@
 import { ethers, hexlify, toUtf8Bytes } from 'ethers'
-import TransgateConnect from "@zkpass/transgate-js-sdk";
+import TransgateConnect from "@zkpass/transgate-js-sdk"
 import IBringSDK, {
   TConstructorArgs,
   TCreateDrop,
@@ -7,39 +7,96 @@ import IBringSDK, {
   TGetFee,
   TUpdateWalletOrProvider,
   TGetDrop,
-  TGetDrops
+  TGetDrops,
+  TInitialize
 } from './types'
 import Drop from '../drop'
 import { TConstructorArgs as TDropConstructorArgs } from '../drop/types'
-import * as configs from '../../configs'
 import { DropFactory } from '../../abi'
 import { indexerApi, TDropData, TDropDataWithFetcher } from '../../api'
+import { ValidationError } from '../../errors'
+import { errors } from '../../texts'
+import {
+  defineFacrtoryAddress,
+  defineIndexerApiUrl,
+  defineZkPassAppId
+} from '../../helpers'
 
 class BringSDK implements IBringSDK {
   connection: ethers.ContractRunner
   fee: number
   dropFactory: ethers.Contract
+  address?: string
+  chainId: bigint
+  zkPassAppId: string
   transgateModule?: typeof TransgateConnect
 
-  // #TODO: set API url and API key from constructor args 
   private _indexerApiUrl: string
   private _indexerApiKey: string | null
 
-  constructor({
+  private constructor({
     walletOrProvider,
-    transgateModule
+    transgateModule,
+    chainId,
+    address
   }: TConstructorArgs) {
+
     this.transgateModule = transgateModule
-    this._initializeConnection(walletOrProvider)
+
+    this._initializeConnection(
+      walletOrProvider,
+      chainId
+    )
+
+  
     this.getFee()
 
-    this._indexerApiUrl = configs.BASE_SEPOLIA_INDEXER_API_URL
+
+
+    this.address = address
+    this.chainId = chainId
+    this.zkPassAppId = defineZkPassAppId(chainId)
+    this._indexerApiUrl = defineIndexerApiUrl(chainId)
   }
 
-  private _initializeConnection = (walletOrProvider: ethers.ContractRunner) => {
+  public static initialize: TInitialize = async ({
+    walletOrProvider,
+    transgateModule
+  }) => {
+    if (!walletOrProvider) {
+      throw new ValidationError(errors.argument_not_provided('walletOrProvider', walletOrProvider))
+    }
+
+
+    let address: string | undefined = undefined
+    if (typeof (walletOrProvider as ethers.Signer).getAddress === 'function'){
+      address = await (walletOrProvider as ethers.Signer).getAddress()
+    }
+
+    let chainId: bigint | undefined = undefined
+    if (walletOrProvider.provider) {
+      chainId = (await (walletOrProvider as ethers.JsonRpcSigner).provider.getNetwork()).chainId
+    } else {
+      chainId = (await (walletOrProvider as ethers.BrowserProvider).getNetwork()).chainId
+    }
+
+    return new BringSDK({
+      walletOrProvider,
+      transgateModule,
+      address,
+      chainId
+    })
+  }
+
+  private _initializeConnection = (
+    walletOrProvider: ethers.ContractRunner,
+    chainId: bigint
+  ) => {
     this.connection = walletOrProvider
+    const factoryAddress = defineFacrtoryAddress(chainId)
+
     this.dropFactory = new ethers.Contract(
-      configs.BASE_SEPOLIA_DROP_FACTORY,
+      factoryAddress,
       DropFactory.abi,
       this.connection
     )
@@ -71,7 +128,6 @@ class BringSDK implements IBringSDK {
       throw new Error('Signer is not provided')
     }
 
-    const connectedAddress = this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined
 
     const { hash: txHash } = await this.dropFactory.createDrop(
       token,
@@ -89,7 +145,7 @@ class BringSDK implements IBringSDK {
           // Note: DropCreated indexes only the first three parameters (creator, drop, token).
           // We filter by creator; drop and token are left as null (wildcards).
           const filter = this.dropFactory.filters.DropCreated(
-            connectedAddress,
+            this.address,
             null,
             null
           );
@@ -155,7 +211,10 @@ class BringSDK implements IBringSDK {
   }
 
   updateWalletOrProvider: TUpdateWalletOrProvider = async (walletOrProvider) => {
-    this._initializeConnection(walletOrProvider)
+    this._initializeConnection(
+      walletOrProvider,
+      this.chainId
+    )
     return true
   }
 
@@ -163,6 +222,7 @@ class BringSDK implements IBringSDK {
     if (!this.fee) {
       this.fee = Number(await this.dropFactory.fee()) / 10000
     }
+
     return {
       fee: this.fee
     }
@@ -199,8 +259,7 @@ class BringSDK implements IBringSDK {
       indexerApiUrl: this._indexerApiUrl,
       indexerApiKey: this._indexerApiKey,
 
-      // #TODO: fetch from API
-      zkPassAppId: '0acb96f1-6e0d-4414-a744-96f2620a6682'
+      zkPassAppId: this.zkPassAppId
     }
 
     // If dropData includes fetcherData, set it as connected user data 
@@ -220,7 +279,7 @@ class BringSDK implements IBringSDK {
     userAddress
   ) => {
     
-    const connectedAddress = userAddress || (this.canSign() ? await (this.connection as ethers.Signer).getAddress() : undefined)
+    const connectedAddress = userAddress || this.address
 
     const { drop: dropData } = await indexerApi.getDrop(
       this._indexerApiUrl,
@@ -248,8 +307,8 @@ class BringSDK implements IBringSDK {
       offset,
       limit,
       status,
-      listed,
-      staked
+      staked,
+      listed
     )
     return {
       drops: dropsArray.map(drop => this._convertDropData(drop)),

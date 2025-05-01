@@ -31,7 +31,7 @@ import {
 
 ```ts
 
-const sdk = new BringSDK({
+const sdk = await BringSDK.initialize({
   walletOrProvider: signer, // optional, required for claiming a drop
   transgateModule // optional, for zkPass functionality, required for claiming a drop
 })
@@ -102,7 +102,7 @@ if (isClaimed) {
 
 ---
 
-## Full Example
+## Full Example (Claim flow)
 
 ```ts
 import {
@@ -110,9 +110,8 @@ import {
   Drop
 } from 'zkbring-sdk'
 
-const sdk = new BringSDK({ walletOrProvider: signer, transgateModule })
+const sdk = await BringSDK.initialize({ walletOrProvider: signer, transgateModule })
 
-// Claim the drop
 const drop = await sdk.getDrop(dropId, '0x...')
 
 if (await drop.isTransgateAvailable()) {
