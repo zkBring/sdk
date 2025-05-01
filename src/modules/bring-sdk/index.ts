@@ -307,8 +307,8 @@ class BringSDK implements IBringSDK {
       offset,
       limit,
       status,
-      listed,
-      staked
+      staked,
+      listed
     )
     return {
       drops: dropsArray.map(drop => this._convertDropData(drop)),
